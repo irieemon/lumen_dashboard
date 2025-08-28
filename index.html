@@ -32,6 +32,7 @@
             margin-bottom: 30px;
             padding-bottom: 20px;
             border-bottom: 3px solid #e0e0e0;
+            position: relative;
         }
         
         .header h1 {
@@ -43,6 +44,15 @@
         .header p {
             color: #7f8c8d;
             font-size: 1.1em;
+        }
+
+        .version {
+            position: absolute;
+            top: 0;
+            right: 0;
+            color: #4a5568;
+            font-size: 0.9em;
+            font-weight: 500;
         }
         
         .controls {
@@ -158,19 +168,23 @@
         
         .sticky-note {
             position: absolute;
-            padding: 8px;
-            border-radius: 3px;
+            padding: 8px 10px;
+            border-radius: 4px;
             cursor: move;
-            font-size: 11px;
-            line-height: 1.3;
+            font-size: 12px;
+            line-height: 1.4;
             box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
             transition: box-shadow 0.3s ease, transform 0.3s ease;
             font-weight: 500;
-            max-width: 120px;
+            width: 150px;
+            min-height: 110px;
             word-wrap: break-word;
             transform: rotate(-2deg);
             z-index: 100;
             user-select: none;
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-start;
         }
         
         .sticky-note:hover {
@@ -505,6 +519,7 @@
         <div class="header">
             <h1>Lumen Workshop Strategic Initiative Matrix</h1>
             <p>Interactive 2x2 Value/Effort Analysis - Drag to reposition, Double-click to view details</p>
+            <div id="version" class="version"></div>
         </div>
         
         <div class="controls">
@@ -602,6 +617,9 @@
                 <h3>Recommended Actions:</h3>
                 <p id="modalActions"></p>
             </div>
+            <div class="form-actions">
+                <button class="btn" onclick="openEditFromDetail()">Edit</button>
+            </div>
         </div>
     </div>
     
@@ -656,6 +674,9 @@
     </div>
     
     <script>
+        // Application version for cache-busting / verification
+        const DASHBOARD_VERSION = '1.1.1';
+
         // Initiative data
         let initiatives = [
             {id: 1, title: "Prioritize CommMgmt Strategy", details: "Establish clear communication management strategy and framework", color: "pink", category: "Strategic/Process", initialX: 10, initialY: 15},
@@ -690,15 +711,21 @@
         
         let currentPositions = {};
         let isDragging = false;
+        let hasMoved = false;
         let currentElement = null;
         let offsetX, offsetY;
         let nextId = 29;
+        let currentDetailId = null;
         
         // Initialize the matrix and table
         function init() {
             loadSavedData();
             createStickyNotes();
             populateTable();
+            const versionEl = document.getElementById('version');
+            if (versionEl) {
+                versionEl.textContent = `Version ${DASHBOARD_VERSION}`;
+            }
         }
         
         function createStickyNotes() {
@@ -754,11 +781,11 @@
             
             // Store position
             currentPositions[item.id] = position;
-            
+
             // Add event listeners
             note.addEventListener('mousedown', startDrag);
-            note.addEventListener('dblclick', showDetails);
-            
+            note.addEventListener('click', handleNoteClick);
+
             container.appendChild(note);
         }
         
@@ -767,12 +794,12 @@
             if (e.target.classList.contains('edit-btn') || e.target.classList.contains('delete-btn')) return;
             
             isDragging = true;
+            hasMoved = false;
             currentElement = e.target.closest('.sticky-note');
-            currentElement.classList.add('dragging');
-            
+
             const rect = currentElement.getBoundingClientRect();
             const containerRect = document.getElementById('matrixContainer').getBoundingClientRect();
-            
+
             offsetX = e.clientX - rect.left;
             offsetY = e.clientY - rect.top;
             
@@ -784,7 +811,12 @@
         
         function drag(e) {
             if (!isDragging || !currentElement) return;
-            
+
+            hasMoved = true;
+            if (!currentElement.classList.contains('dragging')) {
+                currentElement.classList.add('dragging');
+            }
+
             const containerRect = document.getElementById('matrixContainer').getBoundingClientRect();
             
             let x = e.clientX - containerRect.left - offsetX;
@@ -815,9 +847,18 @@
             }
             isDragging = false;
             currentElement = null;
-            
+
             document.removeEventListener('mousemove', drag);
             document.removeEventListener('mouseup', stopDrag);
+        }
+
+        function handleNoteClick(e) {
+            if (hasMoved) {
+                hasMoved = false;
+                return;
+            }
+            const element = e.currentTarget;
+            showDetailsById(element.getAttribute('data-id'));
         }
         
         function populateTable() {
@@ -1030,26 +1071,27 @@
             }
         }
         
-        function showDetails(e) {
-            const element = e.target.closest('.sticky-note');
-            if (element) {
-                showDetailsById(element.getAttribute('data-id'));
-            }
-        }
-        
         function showDetailsById(id) {
             const item = initiatives.find(i => i.id == id);
             if (!item) return;
-            
+
+            currentDetailId = id;
             const position = currentPositions[id] || {x: item.initialX, y: item.initialY};
-            
+
             document.getElementById('modalTitle').textContent = item.title;
             document.getElementById('modalDetails').textContent = item.details || 'No details provided';
-            document.getElementById('modalPosition').textContent = 
+            document.getElementById('modalPosition').textContent =
                 `Value: ${getValueFromPosition(position.y)}, Effort: ${getEffortFromPosition(position.x)}`;
             document.getElementById('modalActions').textContent = getRecommendedActions(position.x, position.y);
-            
+
             document.getElementById('detailModal').style.display = 'block';
+        }
+
+        function openEditFromDetail() {
+            if (currentDetailId !== null) {
+                closeModal('detailModal');
+                openEditModal(currentDetailId);
+            }
         }
         
         function getRecommendedActions(x, y) {
@@ -1193,8 +1235,20 @@
             }
         }
         
-        // Initialize on load
-        window.addEventListener('load', init);
+        // Adjust iframe height so the dashboard fills the browser window
+        function resizeFrame() {
+            const height = document.documentElement.scrollHeight;
+            if (window.Streamlit) {
+                window.Streamlit.setFrameHeight(height);
+            }
+        }
+
+        // Initialize on load and set initial height
+        window.addEventListener('load', () => {
+            init();
+            resizeFrame();
+        });
+        window.addEventListener('resize', resizeFrame);
     </script>
 </body>
 </html>
