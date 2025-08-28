@@ -388,28 +388,29 @@ def create_draggable_matrix():
                         "blue": "#007aff",
                     }
 
-                    # Each paper must be wrapped in dashboard.Item so the grid can position it.
-                    with dashboard.Item(str(row["id"])):
-                        with mui.Paper(
-                            className="drag-handle",
-                            elevation=3,
-                            onClick=lambda e, item_id=row["id"]: handle_click(item_id),
-                            sx={
-                                "padding": "12px",
-                                "borderRadius": "8px",
-                                "background": colors.get(row["color"], "#8e8e93"),
-                                "color": "white",
-                                "cursor": "move",
-                                "minWidth": "120px",
-                                "maxWidth": "150px",
-                                "textAlign": "center",
-                                "&:hover": {"transform": "scale(1.05)", "boxShadow": 4},
-                            },
-                        ):
-                            mui.Typography(
-                                row["title"][:20] + "..." if len(row["title"]) > 20 else row["title"],
-                                sx={"fontSize": "12px", "fontWeight": 500},
-                            )
+                    # Element key must match the layout item id so the grid can position it.
+                    with mui.Paper(
+                        key=str(row["id"]),
+                        className="drag-handle",
+                        elevation=3,
+                        onClick=lambda e, item_id=row["id"]: handle_click(item_id),
+                        sx={
+                            "padding": "12px",
+                            "borderRadius": "8px",
+                            "background": colors.get(row["color"], "#8e8e93"),
+                            "color": "white",
+                            "cursor": "move",
+                            "minWidth": "120px",
+                            "maxWidth": "150px",
+                            "textAlign": "center",
+                            "&:hover": {"transform": "scale(1.05)", "boxShadow": 4},
+                        },
+                    ):
+                        mui.Typography(
+                            row["title"][:20] + "..." if len(row["title"]) > 20 else row["title"],
+                            sx={"fontSize": "12px", "fontWeight": 500},
+                        )
+
 
 def show_dashboard():
     """Display the dashboard with draggable matrix"""
