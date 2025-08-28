@@ -44,6 +44,12 @@
             color: #7f8c8d;
             font-size: 1.1em;
         }
+
+        .version {
+            margin-top: 4px;
+            color: #a0aec0;
+            font-size: 0.9em;
+        }
         
         .controls {
             margin: 20px 0;
@@ -158,20 +164,23 @@
         
         .sticky-note {
             position: absolute;
-            padding: 8px;
-            border-radius: 3px;
+            padding: 8px 10px;
+            border-radius: 4px;
             cursor: move;
-            font-size: 11px;
-            line-height: 1.3;
+            font-size: 12px;
+            line-height: 1.4;
             box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
             transition: box-shadow 0.3s ease, transform 0.3s ease;
             font-weight: 500;
             width: 150px;
-            min-height: 100px;
+            min-height: 110px;
             word-wrap: break-word;
             transform: rotate(-2deg);
             z-index: 100;
             user-select: none;
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-start;
         }
         
         .sticky-note:hover {
@@ -506,6 +515,7 @@
         <div class="header">
             <h1>Lumen Workshop Strategic Initiative Matrix</h1>
             <p>Interactive 2x2 Value/Effort Analysis - Drag to reposition, Double-click to view details</p>
+            <div id="version" class="version"></div>
         </div>
         
         <div class="controls">
@@ -660,6 +670,9 @@
     </div>
     
     <script>
+        // Application version for cache-busting / verification
+        const DASHBOARD_VERSION = '1.1.0';
+
         // Initiative data
         let initiatives = [
             {id: 1, title: "Prioritize CommMgmt Strategy", details: "Establish clear communication management strategy and framework", color: "pink", category: "Strategic/Process", initialX: 10, initialY: 15},
@@ -705,6 +718,10 @@
             loadSavedData();
             createStickyNotes();
             populateTable();
+            const versionEl = document.getElementById('version');
+            if (versionEl) {
+                versionEl.textContent = `Version ${DASHBOARD_VERSION}`;
+            }
         }
         
         function createStickyNotes() {
