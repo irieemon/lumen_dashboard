@@ -20,7 +20,7 @@ def login() -> bool:
         "abcdef",
         cookie_expiry_days=1,
     )
-    authenticator.login("main", key="Login")
+    authenticator.login(location="main", key="Login")
     auth_status = st.session_state.get("authentication_status")
     if auth_status:
         st.session_state["username"] = st.session_state.get("username")
