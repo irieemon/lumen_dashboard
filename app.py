@@ -24,6 +24,8 @@ def main() -> None:
             html, body {
                 margin: 0;
                 padding: 0;
+                height: 100%;
+                min-height: 100vh;
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             }
 
@@ -48,6 +50,14 @@ def main() -> None:
             /* Hide Streamlit's default header to remove extra white space */
             header[data-testid="stHeader"] {
                 display: none;
+            }
+
+            /* Fix the logout button to the bottom-left corner */
+            div.stButton > button:first-child {
+                position: fixed;
+                bottom: 20px;
+                left: 20px;
+                z-index: 1000;
             }
         </style>
         """,
