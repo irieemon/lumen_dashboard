@@ -69,8 +69,9 @@ def main() -> None:
     with index_path.open(encoding="utf-8") as f:
         html = f.read()
 
-    # Initial height is 0; the embedded page will request the correct size
-    st.components.v1.html(html, height=0, scrolling=False)
+    # Provide an initial height; the embedded page will resize itself
+    st.components.v1.html(html, height=1000, scrolling=False)
+
 
     # Place logout button below the dashboard instead of at the top
     authenticator.logout("Logout", "main")
