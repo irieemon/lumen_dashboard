@@ -1239,7 +1239,11 @@
         // Adjust iframe height so the dashboard fills the browser window
         function resizeFrame() {
             const height = document.documentElement.scrollHeight;
-            window.parent.postMessage({ type: 'streamlit:height', height }, '*');
+            window.parent.postMessage({
+                type: 'streamlit:setFrameHeight',
+                height,
+                isStreamlitMessage: true
+            }, '*');
         }
 
         // Watch for changes that affect document height
