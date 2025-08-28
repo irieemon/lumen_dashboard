@@ -1254,31 +1254,22 @@
 
         // Adjust iframe height so the dashboard fills the browser window
         function resizeFrame() {
-            const docHeight = document.documentElement.scrollHeight;
-            const bodyHeight = document.body.scrollHeight;
-            const offsetHeight = Math.max(
-                document.documentElement.offsetHeight,
-                document.body.offsetHeight
-            );
-            const viewportHeight = window.visualViewport ? window.visualViewport.height : 0;
-            const height = Math.max(docHeight, bodyHeight, offsetHeight, viewportHeight, 1000) + 20;
+            let height;
+            try {
+                // Use the outer window's height when embedded in Streamlit
+                height = window.parent.innerHeight;
+            } catch (e) {
+                // Fallback if parent is inaccessible
+                height = window.innerHeight;
+            }
+
             postHeight(height);
         }
 
-        // Watch for changes and repeatedly set height to avoid race conditions
         function setupFrameSizing() {
             resizeFrame();
-            // run again in case Streamlit resets the height after initial render
-            setTimeout(resizeFrame, 100);
-
-            if (window.ResizeObserver) {
-                new ResizeObserver(resizeFrame).observe(document.body);
-            }
 
             window.addEventListener('resize', resizeFrame);
-            if (window.visualViewport) {
-                window.visualViewport.addEventListener('resize', resizeFrame);
-            }
         }
 
         window.addEventListener('load', () => {
