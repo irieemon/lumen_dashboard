@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 import base64
 import json
 from streamlit_elements import elements, mui, html, sync, event
-from streamlit_elements.modules import draggable
+from streamlit_elements.draggable import draggable
 
 # Page configuration
 st.set_page_config(
