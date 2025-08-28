@@ -23,7 +23,8 @@ def main() -> None:
             if st.form_submit_button("Add"):
                 add_initiative(title, details, color, category, 50, 50, st.session_state.get("username", "user"))
                 st.success("Added initiative")
-                st.experimental_rerun()
+                st.rerun()
+
 
     create_draggable_matrix(st.session_state.get("username", "user"))
 
