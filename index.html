@@ -1243,6 +1243,7 @@
             const viewportHeight = window.visualViewport ? window.visualViewport.height : 0;
             const height = Math.max(docHeight, viewportHeight, 1000);
             Streamlit.setFrameHeight(height);
+
         }
 
         // Watch for changes and repeatedly set height to avoid race conditions
