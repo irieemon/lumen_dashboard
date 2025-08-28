@@ -411,6 +411,7 @@ def create_draggable_matrix():
                             sx={"fontSize": "12px", "fontWeight": 500},
                         )
 
+
 def show_dashboard():
     """Display the dashboard with draggable matrix"""
     load_css()
