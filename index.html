@@ -689,6 +689,9 @@
         // Application version for cache-busting / verification
         const DASHBOARD_VERSION = '1.1.3';
 
+        // Base URL for the background API (same host, fixed port)
+        const API_BASE = `${window.location.protocol}//${window.location.hostname}:8000`;
+
         // Initiative data loaded from the shared database
         let initiatives = [];
         let lastServerUpdate = null;
@@ -928,7 +931,7 @@
                 y: id && currentPositions[id] ? currentPositions[id].y : 50
             };
 
-            await fetch('http://localhost:8000/api/initiative', {
+            await fetch(`${API_BASE}/api/initiative`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(payload)
@@ -940,8 +943,7 @@
 
         async function deleteInitiative(id) {
             if (!confirm('Are you sure you want to delete this initiative?')) return;
-
-            await fetch(`http://localhost:8000/api/initiative/${id}`, {method: 'DELETE'});
+            await fetch(`${API_BASE}/api/initiative/${id}`, {method: 'DELETE'});
             await fetchInitiatives();
         }
         
@@ -1051,7 +1053,7 @@
 
         async function fetchInitiatives() {
             try {
-                const response = await fetch('http://localhost:8000/api/initiatives');
+                const response = await fetch(`${API_BASE}/api/initiatives`);
                 const data = await response.json();
                 initiatives = data.initiatives.map(item => ({
                     id: item.id,
@@ -1076,7 +1078,7 @@
 
         async function savePositions() {
             const positions = Object.entries(currentPositions).map(([id, pos]) => ({id: Number(id), x: pos.x, y: pos.y}));
-            await fetch('http://localhost:8000/api/positions', {
+            await fetch(`${API_BASE}/api/positions`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({positions})
@@ -1087,7 +1089,7 @@
 
         async function fetchLastUpdated() {
             try {
-                const res = await fetch('http://localhost:8000/api/last_updated');
+                const res = await fetch(`${API_BASE}/api/last_updated`);
                 const data = await res.json();
                 lastServerUpdate = data.last_updated;
                 const refresh = document.getElementById('refreshBtn');
@@ -1108,7 +1110,8 @@
 
         async function checkForUpdates() {
             try {
-                const res = await fetch('http://localhost:8000/api/last_updated');
+                const res = await fetch(`${API_BASE}/api/last_updated`);
+
                 const data = await res.json();
                 if (lastServerUpdate && data.last_updated !== lastServerUpdate) {
                     const refresh = document.getElementById('refreshBtn');
@@ -1163,7 +1166,7 @@
                                     x: 50,
                                     y: 50
                                 };
-                                await fetch('http://localhost:8000/api/initiative', {
+                                await fetch(`${API_BASE}/api/initiative`, {
                                     method: 'POST',
                                     headers: {'Content-Type': 'application/json'},
                                     body: JSON.stringify(payload)
