@@ -258,7 +258,9 @@ def create_draggable_matrix():
         st.rerun()
 
     # Create the elements container
+codex/fix-modulenotfounderror-in-streamlit-app-92ndhk
     with elements("matrix"):
+main
         with mui.Box(
             sx={
                 "width": 800,
