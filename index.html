@@ -1240,6 +1240,19 @@
             }
         }
         
+        // Send the calculated height to Streamlit, falling back to postMessage
+        function postHeight(height) {
+            if (window.Streamlit && Streamlit.setFrameHeight) {
+                Streamlit.setFrameHeight(height);
+            } else {
+                window.parent.postMessage({
+                    type: 'streamlit:setFrameHeight',
+                    height,
+                    isStreamlitMessage: true
+                }, '*');
+            }
+        }
+
         // Adjust iframe height so the dashboard fills the browser window
         function resizeFrame() {
             const docHeight = document.documentElement.scrollHeight;
@@ -1250,7 +1263,7 @@
             );
             const viewportHeight = window.visualViewport ? window.visualViewport.height : 0;
             const height = Math.max(docHeight, bodyHeight, offsetHeight, viewportHeight, 1000) + 20;
-            Streamlit.setFrameHeight(height);
+            postHeight(height);
         }
 
         // Watch for changes and repeatedly set height to avoid race conditions

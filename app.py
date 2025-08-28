@@ -20,18 +20,30 @@ def main() -> None:
     st.markdown(
         """
         <style>
-            /* Remove Streamlit's default padding and background so the
-               embedded dashboard can span edge-to-edge without a white border */
+            /* Make the entire Streamlit page adopt the dashboard background */
+            html, body {
+                margin: 0;
+                padding: 0;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            }
+
+            div[data-testid="stApp"] {
+                background: transparent;
+            }
+
+            /* Remove Streamlit's default padding so the iframe reaches the edges */
             div[data-testid="stAppViewContainer"] {
                 padding: 0;
                 background: transparent;
             }
             div[data-testid="stAppViewContainer"] > .main {
                 padding: 0;
+                background: transparent;
             }
             div[data-testid="stAppViewContainer"] > .main .block-container {
                 padding: 0;
                 margin: 0;
+                background: transparent;
             }
             /* Hide Streamlit's default header to remove extra white space */
             header[data-testid="stHeader"] {
