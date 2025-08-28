@@ -172,12 +172,14 @@
             border-radius: 4px;
             cursor: move;
             font-size: 14px;
+
             line-height: 1.4;
             box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
             transition: box-shadow 0.3s ease, transform 0.3s ease;
             font-weight: 500;
             width: 160px;
             min-height: 120px;
+
             word-wrap: break-word;
             transform: rotate(-2deg);
             z-index: 100;
@@ -186,6 +188,7 @@
             align-items: flex-start;
             justify-content: flex-start;
             font-family: 'Comic Sans MS', 'Marker Felt', cursive;
+
         }
         
         .sticky-note:hover {
@@ -678,6 +681,7 @@
         // Application version for cache-busting / verification
         const DASHBOARD_VERSION = '1.1.2';
 
+
         // Initiative data
         let initiatives = [
             {id: 1, title: "Prioritize CommMgmt Strategy", details: "Establish clear communication management strategy and framework", color: "pink", category: "Strategic/Process", initialX: 10, initialY: 15},
@@ -712,6 +716,7 @@
         
         let currentPositions = {};
         let isDragging = false;
+        let hasMoved = false;
         let currentElement = null;
         let offsetX, offsetY;
         let nextId = 29;
@@ -786,6 +791,7 @@
             note.addEventListener('mousedown', startDrag);
             note.addEventListener('dblclick', handleNoteDblClick);
 
+
             container.appendChild(note);
         }
         
@@ -794,6 +800,7 @@
             if (e.target.classList.contains('edit-btn') || e.target.classList.contains('delete-btn')) return;
             
             isDragging = true;
+            hasMoved = false;
             currentElement = e.target.closest('.sticky-note');
 
             const rect = currentElement.getBoundingClientRect();
@@ -810,6 +817,7 @@
         
         function drag(e) {
             if (!isDragging || !currentElement) return;
+
 
             if (!currentElement.classList.contains('dragging')) {
                 currentElement.classList.add('dragging');
@@ -851,6 +859,7 @@
         }
 
         function handleNoteDblClick(e) {
+
             const element = e.currentTarget;
             showDetailsById(element.getAttribute('data-id'));
         }
