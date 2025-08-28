@@ -168,16 +168,18 @@
         
         .sticky-note {
             position: absolute;
-            padding: 8px 10px;
+            padding: 10px 12px;
             border-radius: 4px;
             cursor: move;
-            font-size: 12px;
+            font-size: 14px;
+
             line-height: 1.4;
             box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
             transition: box-shadow 0.3s ease, transform 0.3s ease;
             font-weight: 500;
-            width: 150px;
-            min-height: 110px;
+            width: 160px;
+            min-height: 120px;
+
             word-wrap: break-word;
             transform: rotate(-2deg);
             z-index: 100;
@@ -185,6 +187,8 @@
             display: flex;
             align-items: flex-start;
             justify-content: flex-start;
+            font-family: 'Comic Sans MS', 'Marker Felt', cursive;
+
         }
         
         .sticky-note:hover {
@@ -675,7 +679,8 @@
     
     <script>
         // Application version for cache-busting / verification
-        const DASHBOARD_VERSION = '1.1.1';
+        const DASHBOARD_VERSION = '1.1.2';
+
 
         // Initiative data
         let initiatives = [
@@ -784,7 +789,8 @@
 
             // Add event listeners
             note.addEventListener('mousedown', startDrag);
-            note.addEventListener('click', handleNoteClick);
+            note.addEventListener('dblclick', handleNoteDblClick);
+
 
             container.appendChild(note);
         }
@@ -812,7 +818,7 @@
         function drag(e) {
             if (!isDragging || !currentElement) return;
 
-            hasMoved = true;
+
             if (!currentElement.classList.contains('dragging')) {
                 currentElement.classList.add('dragging');
             }
@@ -852,11 +858,8 @@
             document.removeEventListener('mouseup', stopDrag);
         }
 
-        function handleNoteClick(e) {
-            if (hasMoved) {
-                hasMoved = false;
-                return;
-            }
+        function handleNoteDblClick(e) {
+
             const element = e.currentTarget;
             showDetailsById(element.getAttribute('data-id'));
         }
@@ -1239,7 +1242,6 @@
         function resizeFrame() {
             const height = document.documentElement.scrollHeight;
             window.parent.postMessage({ type: 'streamlit:height', height }, '*');
-
         }
 
         // Initialize on load and set initial height
