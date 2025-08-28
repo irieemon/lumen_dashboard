@@ -25,7 +25,6 @@ def main() -> None:
                 st.success("Added initiative")
                 st.rerun()
 
-
     create_draggable_matrix(st.session_state.get("username", "user"))
 
 
