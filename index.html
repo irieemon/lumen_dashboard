@@ -1239,6 +1239,7 @@
         function resizeFrame() {
             const height = document.documentElement.scrollHeight;
             window.parent.postMessage({ type: 'streamlit:height', height }, '*');
+
         }
 
         // Initialize on load and set initial height
