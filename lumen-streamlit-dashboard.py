@@ -403,285 +403,125 @@ def load_css():
     </style>
     """, unsafe_allow_html=True)
 
-# Interactive Matrix Component with Drag and Drop
+# Create Interactive Plotly Matrix
 def create_interactive_matrix():
-    """Create an interactive matrix with drag-and-drop and click-to-edit capabilities"""
+    """Create an interactive matrix using Plotly with editable cards"""
     
     df = get_initiatives_from_db()
     
-    # Convert dataframe to JSON for JavaScript
-    initiatives_json = df.to_json(orient='records') if not df.empty else '[]'
+    fig = go.Figure()
     
-    # HTML and JavaScript for interactive matrix
-    matrix_html = f"""
-    <div class="matrix-wrapper">
-        <div class="matrix-container" id="matrixContainer">
-            <div class="quadrant-overlay">
-                <div class="quadrant-label quick-wins" style="top: 20px; left: 20px;">Quick Wins</div>
-                <div class="quadrant-label strategic" style="top: 20px; right: 20px;">Strategic</div>
-                <div class="quadrant-label low-priority" style="bottom: 20px; left: 20px;">Low Priority</div>
-                <div class="quadrant-label consider" style="bottom: 20px; right: 20px;">Consider</div>
-            </div>
-            
-            <!-- Grid lines -->
-            <svg style="position: absolute; width: 100%; height: 100%; pointer-events: none;">
-                <line x1="0" y1="33.33%" x2="100%" y2="33.33%" stroke="#e1e4e8" stroke-width="2" stroke-dasharray="5,5"/>
-                <line x1="0" y1="66.66%" x2="100%" y2="66.66%" stroke="#e1e4e8" stroke-width="2" stroke-dasharray="5,5"/>
-                <line x1="50%" y1="0" x2="50%" y2="100%" stroke="#e1e4e8" stroke-width="2" stroke-dasharray="5,5"/>
-            </svg>
-            
-            <!-- Axis labels -->
-            <div style="position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); font-weight: 600; color: #64748b;">
-                Effort →
-            </div>
-            <div style="position: absolute; left: -30px; top: 50%; transform: rotate(-90deg) translateX(-50%); font-weight: 600; color: #64748b;">
-                Value →
-            </div>
-            
-            <div id="cardsContainer"></div>
-        </div>
-        
-        <!-- Floating Add Button -->
-        <button class="add-card-btn" onclick="addNewCard()">+</button>
-    </div>
+    # Add quadrant backgrounds
+    shapes = [
+        # Quick Wins (top-left) - High Value, Low Effort
+        dict(type="rect", x0=0, y0=66.66, x1=50, y1=100,
+             fillcolor="rgba(16, 185, 129, 0.1)", line=dict(width=0)),
+        # Strategic Investments (top-right) - High Value, High Effort
+        dict(type="rect", x0=50, y0=66.66, x1=100, y1=100,
+             fillcolor="rgba(59, 130, 246, 0.1)", line=dict(width=0)),
+        # Low Priority (bottom-left) - Low Value, Low Effort
+        dict(type="rect", x0=0, y0=0, x1=50, y1=33.33,
+             fillcolor="rgba(239, 68, 68, 0.1)", line=dict(width=0)),
+        # Consider Carefully (bottom-right) - Low Value, High Effort
+        dict(type="rect", x0=50, y0=0, x1=100, y1=33.33,
+             fillcolor="rgba(245, 158, 11, 0.1)", line=dict(width=0))
+    ]
     
-    <!-- Edit Modal -->
-    <div id="editModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000;">
-        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 20px; width: 500px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
-            <h3 style="margin-top: 0; color: #1a1a2e;">Edit Initiative</h3>
-            <input type="hidden" id="editId">
-            <div style="margin-bottom: 1rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Title</label>
-                <input type="text" id="editTitle" style="width: 100%; padding: 0.75rem; border-radius: 10px; border: 2px solid #e1e4e8;">
-            </div>
-            <div style="margin-bottom: 1rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Details</label>
-                <textarea id="editDetails" style="width: 100%; padding: 0.75rem; border-radius: 10px; border: 2px solid #e1e4e8; min-height: 100px;"></textarea>
-            </div>
-            <div style="margin-bottom: 1rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Category</label>
-                <select id="editCategory" style="width: 100%; padding: 0.75rem; border-radius: 10px; border: 2px solid #e1e4e8;">
-                    <option value="Strategic/Process">Strategic/Process</option>
-                    <option value="Quick Implementation">Quick Implementation</option>
-                    <option value="Technology/Platform">Technology/Platform</option>
-                    <option value="People/Organization">People/Organization</option>
-                </select>
-            </div>
-            <div style="margin-bottom: 1rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Color</label>
-                <select id="editColor" style="width: 100%; padding: 0.75rem; border-radius: 10px; border: 2px solid #e1e4e8;">
-                    <option value="pink">Pink</option>
-                    <option value="yellow">Yellow</option>
-                    <option value="green">Green</option>
-                    <option value="blue">Blue</option>
-                </select>
-            </div>
-            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-                <button onclick="closeEditModal()" style="padding: 0.75rem 1.5rem; border-radius: 10px; border: 2px solid #e1e4e8; background: white; cursor: pointer;">Cancel</button>
-                <button onclick="saveEdit()" style="padding: 0.75rem 1.5rem; border-radius: 10px; border: none; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; cursor: pointer;">Save</button>
-                <button onclick="deleteCard()" style="padding: 0.75rem 1.5rem; border-radius: 10px; border: none; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; cursor: pointer;">Delete</button>
-            </div>
-        </div>
-    </div>
+    # Add grid lines
+    shapes.extend([
+        dict(type="line", x0=0, y0=33.33, x1=100, y1=33.33,
+             line=dict(color="#e1e4e8", width=1, dash="dash")),
+        dict(type="line", x0=0, y0=66.66, x1=100, y1=66.66,
+             line=dict(color="#e1e4e8", width=1, dash="dash")),
+        dict(type="line", x0=50, y0=0, x1=50, y1=100,
+             line=dict(color="#e1e4e8", width=1, dash="dash"))
+    ])
     
-    <script>
-        let initiatives = {initiatives_json};
-        let draggedElement = null;
-        let isCreatingNew = false;
+    if not df.empty:
+        # Color mapping
+        color_map = {
+            "pink": "#ff69b4",
+            "yellow": "#ffd700", 
+            "green": "#48c774",
+            "blue": "#3273dc"
+        }
         
-        function createCard(initiative) {{
-            const card = document.createElement('div');
-            card.className = 'initiative-card ' + initiative.color;
-            card.id = 'card-' + initiative.id;
-            card.style.position = 'absolute';
-            card.style.left = initiative.x + '%';
-            card.style.top = initiative.y + '%';
-            card.style.width = '150px';
-            card.style.cursor = 'move';
-            card.style.transform = 'translate(-50%, -50%)';
-            card.innerHTML = `
-                <div style="font-weight: 600; margin-bottom: 0.5rem; font-size: 0.875rem;">${{initiative.title}}</div>
-                <div style="font-size: 0.75rem; color: #64748b;">${{initiative.category}}</div>
-            `;
-            
-            // Make draggable
-            card.draggable = true;
-            card.addEventListener('dragstart', (e) => {{
-                draggedElement = card;
-                card.style.opacity = '0.5';
-            }});
-            
-            card.addEventListener('dragend', (e) => {{
-                card.style.opacity = '1';
-                
-                // Calculate new position
-                const container = document.getElementById('matrixContainer');
-                const rect = container.getBoundingClientRect();
-                const x = ((e.clientX - rect.left) / rect.width) * 100;
-                const y = ((e.clientY - rect.top) / rect.height) * 100;
-                
-                // Constrain to bounds
-                const newX = Math.max(5, Math.min(95, x));
-                const newY = Math.max(5, Math.min(95, y));
-                
-                card.style.left = newX + '%';
-                card.style.top = newY + '%';
-                
-                // Update position in database
-                updatePosition(initiative.id, newX, newY);
-            }});
-            
-            // Click to edit
-            card.addEventListener('click', (e) => {{
-                if (!isCreatingNew) {{
-                    openEditModal(initiative);
-                }}
-            }});
-            
-            return card;
-        }}
-        
-        function renderCards() {{
-            const container = document.getElementById('cardsContainer');
-            container.innerHTML = '';
-            initiatives.forEach(init => {{
-                container.appendChild(createCard(init));
-            }});
-        }}
-        
-        function addNewCard() {{
-            isCreatingNew = true;
-            const container = document.getElementById('matrixContainer');
-            
-            // Create temporary card
-            const tempCard = document.createElement('div');
-            tempCard.className = 'initiative-card green';
-            tempCard.style.position = 'absolute';
-            tempCard.style.left = '50%';
-            tempCard.style.top = '50%';
-            tempCard.style.width = '150px';
-            tempCard.style.transform = 'translate(-50%, -50%)';
-            tempCard.style.opacity = '0.7';
-            tempCard.innerHTML = '<div style="text-align: center;">Click to place</div>';
-            
-            container.appendChild(tempCard);
-            
-            // Follow mouse
-            const moveCard = (e) => {{
-                const rect = container.getBoundingClientRect();
-                const x = ((e.clientX - rect.left) / rect.width) * 100;
-                const y = ((e.clientY - rect.top) / rect.height) * 100;
-                tempCard.style.left = Math.max(5, Math.min(95, x)) + '%';
-                tempCard.style.top = Math.max(5, Math.min(95, y)) + '%';
-            }};
-            
-            container.addEventListener('mousemove', moveCard);
-            
-            // Click to place
-            container.addEventListener('click', function placeCard(e) {{
-                const rect = container.getBoundingClientRect();
-                const x = ((e.clientX - rect.left) / rect.width) * 100;
-                const y = ((e.clientY - rect.top) / rect.height) * 100;
-                
-                container.removeEventListener('mousemove', moveCard);
-                container.removeEventListener('click', placeCard);
-                tempCard.remove();
-                
-                // Open modal for new card
-                const newInit = {{
-                    id: 'new',
-                    title: 'New Initiative',
-                    details: '',
-                    category: 'Strategic/Process',
-                    color: 'green',
-                    x: Math.max(5, Math.min(95, x)),
-                    y: Math.max(5, Math.min(95, y))
-                }};
-                
-                openEditModal(newInit);
-                isCreatingNew = false;
-            }});
-        }}
-        
-        function openEditModal(initiative) {{
-            document.getElementById('editModal').style.display = 'block';
-            document.getElementById('editId').value = initiative.id;
-            document.getElementById('editTitle').value = initiative.title;
-            document.getElementById('editDetails').value = initiative.details || '';
-            document.getElementById('editCategory').value = initiative.category;
-            document.getElementById('editColor').value = initiative.color;
-        }}
-        
-        function closeEditModal() {{
-            document.getElementById('editModal').style.display = 'none';
-        }}
-        
-        function saveEdit() {{
-            const id = document.getElementById('editId').value;
-            const title = document.getElementById('editTitle').value;
-            const details = document.getElementById('editDetails').value;
-            const category = document.getElementById('editCategory').value;
-            const color = document.getElementById('editColor').value;
-            
-            // Send update to Streamlit
-            if (id === 'new') {{
-                const newInit = initiatives.find(i => i.id === 'new');
-                window.parent.postMessage({{
-                    type: 'create',
-                    data: {{
-                        title: title,
-                        details: details,
-                        category: category,
-                        color: color,
-                        x: newInit.x,
-                        y: newInit.y
-                    }}
-                }}, '*');
-            }} else {{
-                window.parent.postMessage({{
-                    type: 'update',
-                    data: {{
-                        id: id,
-                        title: title,
-                        details: details,
-                        category: category,
-                        color: color
-                    }}
-                }}, '*');
-            }}
-            
-            closeEditModal();
-        }}
-        
-        function deleteCard() {{
-            const id = document.getElementById('editId').value;
-            if (id !== 'new') {{
-                window.parent.postMessage({{
-                    type: 'delete',
-                    data: {{ id: id }}
-                }}, '*');
-            }}
-            closeEditModal();
-        }}
-        
-        function updatePosition(id, x, y) {{
-            window.parent.postMessage({{
-                type: 'move',
-                data: {{ id: id, x: x, y: y }}
-            }}, '*');
-        }}
-        
-        // Enable drag and drop on container
-        document.getElementById('matrixContainer').addEventListener('dragover', (e) => {{
-            e.preventDefault();
-        }});
-        
-        // Initial render
-        renderCards();
-    </script>
-    """
+        # Create scatter plot with cards
+        for _, row in df.iterrows():
+            fig.add_trace(go.Scatter(
+                x=[row['x']],
+                y=[row['y']],
+                mode='markers+text',
+                marker=dict(
+                    size=40,
+                    color=color_map.get(row['color'], '#cccccc'),
+                    line=dict(width=2, color='white'),
+                    opacity=0.9
+                ),
+                text=row['title'][:20] + '...' if len(row['title']) > 20 else row['title'],
+                textposition="middle center",
+                textfont=dict(size=10, color='white', family='Inter'),
+                hovertemplate=(
+                    f"<b>{row['title']}</b><br>"
+                    f"{row['details']}<br>"
+                    f"<br>Category: {row['category']}"
+                    f"<br>Value: {row['value']}"
+                    f"<br>Effort: {row['effort']}"
+                    f"<br>Last updated: {row['updated_by']}"
+                    "<extra></extra>"
+                ),
+                showlegend=False,
+                customdata=[row['id']],
+                name=row['title']
+            ))
     
-    return matrix_html
+    # Update layout
+    fig.update_layout(
+        xaxis=dict(
+            title="<b>Effort →</b>",
+            range=[-5, 105],
+            tickmode='array',
+            tickvals=[0, 50, 100],
+            ticktext=['Low', 'Medium', 'High'],
+            showgrid=False,
+            zeroline=False
+        ),
+        yaxis=dict(
+            title="<b>Value →</b>",
+            range=[-5, 105],
+            tickmode='array',
+            tickvals=[0, 33.33, 66.66, 100],
+            ticktext=['Low', 'Medium', 'Medium', 'High'],
+            showgrid=False,
+            zeroline=False
+        ),
+        shapes=shapes,
+        annotations=[
+            dict(text="<b>QUICK WINS</b>", x=25, y=85, showarrow=False, 
+                 font=dict(size=14, color="#10b981", family="Inter")),
+            dict(text="<b>STRATEGIC</b>", x=75, y=85, showarrow=False, 
+                 font=dict(size=14, color="#3b82f6", family="Inter")),
+            dict(text="<b>LOW PRIORITY</b>", x=25, y=15, showarrow=False, 
+                 font=dict(size=14, color="#ef4444", family="Inter")),
+            dict(text="<b>CONSIDER</b>", x=75, y=15, showarrow=False, 
+                 font=dict(size=14, color="#f59e0b", family="Inter"))
+        ],
+        height=700,
+        hovermode='closest',
+        dragmode='pan',
+        plot_bgcolor='#fafafa',
+        paper_bgcolor='white',
+        margin=dict(l=60, r=20, t=20, b=60),
+        font=dict(family="Inter, sans-serif")
+    )
+    
+    # Make it interactive
+    fig.update_traces(
+        selected=dict(marker=dict(size=50)),
+        unselected=dict(marker=dict(opacity=0.5))
+    )
+    
+    return fig
 
 # Database functions (keep existing ones and add these)
 def update_position(id, x, y, user="user"):
@@ -1013,17 +853,113 @@ def show_dashboard():
     with tab1:
         # Interactive Matrix
         st.markdown("### Interactive Strategy Matrix")
-        st.markdown("*Drag cards to reposition · Click to edit · Use + button to add new initiatives*")
         
-        # Display the interactive matrix
-        matrix_html = create_interactive_matrix()
-        components.html(matrix_html, height=800, scrolling=False)
+        # Create two columns for matrix and controls
+        col1, col2 = st.columns([4, 1])
+        
+        with col1:
+            # Display the Plotly matrix
+            fig = create_interactive_matrix()
+            st.plotly_chart(fig, use_container_width=True, key="matrix_plot")
+        
+        with col2:
+            st.markdown("### Quick Actions")
+            
+            # Add new initiative
+            if st.button("➕ Add Initiative", use_container_width=True):
+                st.session_state.show_add_form = True
+            
+            # Edit selected initiative
+            st.markdown("### Edit Initiative")
+            df = get_initiatives_from_db()
+            if not df.empty:
+                selected_title = st.selectbox(
+                    "Select to edit:",
+                    ["Choose..."] + df['title'].tolist(),
+                    key="edit_select"
+                )
+                
+                if selected_title != "Choose...":
+                    selected = df[df['title'] == selected_title].iloc[0]
+                    
+                    with st.form(key=f"edit_form_{selected['id']}"):
+                        new_title = st.text_input("Title", value=selected['title'])
+                        new_details = st.text_area("Details", value=selected.get('details', ''))
+                        new_x = st.slider("Effort", 0, 100, int(selected['x']))
+                        new_y = st.slider("Value", 0, 100, int(selected['y']))
+                        
+                        col1, col2 = st.columns(2)
+                        with col1:
+                            if st.form_submit_button("💾 Save", use_container_width=True):
+                                update_initiative_in_db(
+                                    selected['id'], new_title, new_details, 
+                                    new_x, new_y, st.session_state.username
+                                )
+                                st.success("Updated!")
+                                st.rerun()
+                        with col2:
+                            if st.form_submit_button("🗑️ Delete", use_container_width=True):
+                                delete_initiative_from_db(
+                                    selected['id'], selected['title'], 
+                                    st.session_state.username
+                                )
+                                st.success("Deleted!")
+                                st.rerun()
+        
+        # Add new initiative form (popup-style)
+        if hasattr(st.session_state, 'show_add_form') and st.session_state.show_add_form:
+            with st.container():
+                st.markdown("---")
+                st.markdown("### 🆕 Add New Initiative")
+                
+                with st.form(key="add_new_form"):
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        title = st.text_input("Title*", key="new_title")
+                        category = st.selectbox(
+                            "Category*",
+                            ["Strategic/Process", "Quick Implementation", 
+                             "Technology/Platform", "People/Organization"],
+                            key="new_category"
+                        )
+                        x_pos = st.slider("Effort (0=Low, 100=High)", 0, 100, 50, key="new_x")
+                    
+                    with col2:
+                        details = st.text_area("Details", key="new_details")
+                        color = st.selectbox(
+                            "Color*",
+                            ["pink", "yellow", "green", "blue"],
+                            key="new_color"
+                        )
+                        y_pos = st.slider("Value (0=Low, 100=High)", 0, 100, 50, key="new_y")
+                    
+                    col1, col2, col3 = st.columns(3)
+                    with col2:
+                        submitted = st.form_submit_button("Add Initiative", use_container_width=True)
+                        
+                    if submitted:
+                        if title:
+                            add_initiative_to_db(
+                                title, details, color, category, 
+                                x_pos, y_pos, st.session_state.username
+                            )
+                            st.session_state.show_add_form = False
+                            st.success("Initiative added successfully!")
+                            st.rerun()
+                        else:
+                            st.error("Title is required!")
+                
+                if st.button("Cancel", use_container_width=True):
+                    st.session_state.show_add_form = False
+                    st.rerun()
         
         # Quick stats row
         df = get_initiatives_from_db()
         if not df.empty:
             df['Quadrant'] = df.apply(lambda row: get_quadrant(row['x'], row['y']), axis=1)
             
+            st.markdown("---")
             col1, col2, col3, col4 = st.columns(4)
             with col1:
                 quick_wins = len(df[df['Quadrant'] == 'Quick Wins'])
