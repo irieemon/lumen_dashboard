@@ -9,8 +9,7 @@ import sqlite3
 from datetime import datetime, timedelta
 import base64
 import json
-from streamlit_elements import elements, mui, html, sync, event
-from streamlit_elements.draggable import draggable
+from streamlit_elements import elements, mui, html, dashboard
 
 # Page configuration
 st.set_page_config(
@@ -234,33 +233,35 @@ def show_login():
 
 def create_draggable_matrix():
     """Create a draggable matrix using streamlit-elements"""
-    
+
     df = get_initiatives_from_db()
-    
-    # Create the elements container
-    with elements("matrix_container", key="matrix"):
-        
-        # Define event handlers
-        def handle_drag_stop(event, data):
-            """Handle when an item is dropped"""
-            item_id = data['node']['id']
-            # Calculate position as percentage
-            x = (data['x'] / 800) * 100  # Assuming 800px width
-            y = 100 - ((data['y'] / 600) * 100)  # Invert Y axis, assuming 600px height
-            
-            # Update position in database
+
+    # Build initial layout from stored positions
+    layout = []
+    for _, row in df.iterrows():
+        grid_x = int((row["x"] / 100) * 12)
+        grid_y = int(((100 - row["y"]) / 100) * 12)
+        layout.append(dashboard.Item(str(row["id"]), grid_x, grid_y, 1, 1))
+
+    def handle_layout_change(updated_layout):
+        """Update positions in database after drag"""
+        for item in updated_layout:
+            item_id = int(item["i"])
+            x = (item["x"] / 12) * 100
+            y = 100 - (item["y"] / 12) * 100
             update_position(item_id, x, y, st.session_state.username)
-            st.rerun()
-        
-        def handle_click(item_id):
-            """Handle when an item is clicked"""
-            st.session_state.selected_initiative = item_id
-            st.rerun()
-        
-        # Create the matrix background
+        st.rerun()
+
+    def handle_click(item_id):
+        """Handle when an item is clicked"""
+        st.session_state.selected_initiative = item_id
+        st.rerun()
+
+    # Create the elements container
+    with elements("matrix"):
         with mui.Box(
             sx={
-                "width": "100%",
+                "width": 800,
                 "height": 600,
                 "position": "relative",
                 "background": "linear-gradient(to right, #f5f5f7 50%, #ffffff 50%)",
@@ -281,7 +282,7 @@ def create_draggable_matrix():
                     "fontSize": "12px"
                 }
             )
-            
+
             mui.Typography(
                 "STRATEGIC",
                 sx={
@@ -293,7 +294,7 @@ def create_draggable_matrix():
                     "fontSize": "12px"
                 }
             )
-            
+
             mui.Typography(
                 "LOW PRIORITY",
                 sx={
@@ -305,7 +306,7 @@ def create_draggable_matrix():
                     "fontSize": "12px"
                 }
             )
-            
+
             mui.Typography(
                 "CONSIDER",
                 sx={
@@ -317,7 +318,7 @@ def create_draggable_matrix():
                     "fontSize": "12px"
                 }
             )
-            
+
             # Grid lines
             mui.Box(
                 sx={
@@ -329,7 +330,7 @@ def create_draggable_matrix():
                     "background": "#d2d2d7"
                 }
             )
-            
+
             mui.Box(
                 sx={
                     "position": "absolute",
@@ -340,7 +341,7 @@ def create_draggable_matrix():
                     "background": "#d2d2d7"
                 }
             )
-            
+
             mui.Box(
                 sx={
                     "position": "absolute",
@@ -351,58 +352,47 @@ def create_draggable_matrix():
                     "background": "#d2d2d7"
                 }
             )
-            
-            # Create draggable items
-            for _, row in df.iterrows():
-                # Color mapping
-                colors = {
-                    "pink": "#ff3b30",
-                    "yellow": "#ffcc00",
-                    "green": "#34c759",
-                    "blue": "#007aff"
-                }
-                
-                # Convert position to pixels
-                x = (row['x'] / 100) * 800
-                y = ((100 - row['y']) / 100) * 600
-                
-                with draggable.DraggableCore(
-                    onStop=handle_drag_stop,
-                    handle=f"#handle-{row['id']}"
-                ):
-                    with mui.Box(
-                        id=f"item-{row['id']}",
+
+            # Draggable items using dashboard.Grid
+            with dashboard.Grid(
+                layout,
+                rowHeight=50,
+                cols=12,
+                width=800,
+                margin=[0, 0],
+                containerPadding=[0, 0],
+                draggableHandle=".drag-handle",
+                onLayoutChange=handle_layout_change,
+            ):
+                for _, row in df.iterrows():
+                    colors = {
+                        "pink": "#ff3b30",
+                        "yellow": "#ffcc00",
+                        "green": "#34c759",
+                        "blue": "#007aff",
+                    }
+
+                    with mui.Paper(
+                        key=str(row["id"]),
+                        className="drag-handle",
+                        elevation=3,
+                        onClick=lambda e, item_id=row["id"]: handle_click(item_id),
                         sx={
-                            "position": "absolute",
-                            "left": f"{x}px",
-                            "top": f"{y}px",
-                            "transform": "translate(-50%, -50%)",
-                            "zIndex": 100
-                        }
+                            "padding": "12px",
+                            "borderRadius": "8px",
+                            "background": colors.get(row["color"], "#8e8e93"),
+                            "color": "white",
+                            "cursor": "move",
+                            "minWidth": "120px",
+                            "maxWidth": "150px",
+                            "textAlign": "center",
+                            "&:hover": {"transform": "scale(1.05)", "boxShadow": 4},
+                        },
                     ):
-                        with mui.Paper(
-                            id=f"handle-{row['id']}",
-                            elevation=3,
-                            onClick=lambda id=row['id']: handle_click(id),
-                            sx={
-                                "padding": "12px",
-                                "borderRadius": "8px",
-                                "background": colors.get(row['color'], '#8e8e93'),
-                                "color": "white",
-                                "cursor": "move",
-                                "minWidth": "120px",
-                                "maxWidth": "150px",
-                                "textAlign": "center",
-                                "&:hover": {
-                                    "transform": "scale(1.05)",
-                                    "boxShadow": 4
-                                }
-                            }
-                        ):
-                            mui.Typography(
-                                row['title'][:20] + '...' if len(row['title']) > 20 else row['title'],
-                                sx={"fontSize": "12px", "fontWeight": 500}
-                            )
+                        mui.Typography(
+                            row["title"][:20] + "..." if len(row["title"]) > 20 else row["title"],
+                            sx={"fontSize": "12px", "fontWeight": 500},
+                        )
 
 def show_dashboard():
     """Display the dashboard with draggable matrix"""
