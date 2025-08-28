@@ -1,12 +1,16 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from db import (
+    init_db,
+
     get_initiatives,
     update_position,
     upsert_initiative,
     delete_initiative,
     get_last_updated,
 )
+
+init_db()
 
 app = Flask(__name__)
 CORS(app)

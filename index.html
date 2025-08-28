@@ -1111,7 +1111,6 @@
         async function checkForUpdates() {
             try {
                 const res = await fetch(`${API_BASE}/api/last_updated`);
-
                 const data = await res.json();
                 if (lastServerUpdate && data.last_updated !== lastServerUpdate) {
                     const refresh = document.getElementById('refreshBtn');
