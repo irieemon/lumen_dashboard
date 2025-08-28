@@ -1263,11 +1263,13 @@
                 // Fallback if parent is inaccessible
                 height = window.innerHeight;
             }
+
             postHeight(height);
         }
 
         function setupFrameSizing() {
             resizeFrame();
+
             window.addEventListener('resize', resizeFrame);
         }
 
