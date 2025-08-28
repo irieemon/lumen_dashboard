@@ -26,8 +26,8 @@ def main() -> None:
                 padding: 0;
                 height: 100%;
                 min-height: 100vh;
-                /* Highlight the outer container (formerly purple) in red */
-                background: red;
+                /* Use a unified gray gradient across the app */
+                background: linear-gradient(135deg, #555, #ddd);
             }
 
             div[data-testid="stApp"] {
@@ -70,8 +70,7 @@ def main() -> None:
         html = f.read()
 
     # Provide an initial height; the embedded page will resize itself
-    st.components.v1.html(html, height=1000, scrolling=False)
-
+    st.components.v1.html(html, height=1200, scrolling=False)
 
     # Place logout button below the dashboard instead of at the top
     authenticator.logout("Logout", "main")
