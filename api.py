@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from db import (
     init_db,
+
     get_initiatives,
     update_position,
     upsert_initiative,
