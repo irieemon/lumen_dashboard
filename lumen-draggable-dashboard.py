@@ -9,7 +9,10 @@ import sqlite3
 from datetime import datetime, timedelta
 import base64
 import json
+# streamlit_elements.draggable has been removed; use dashboard.Grid instead
+
 from streamlit_elements import elements, mui, html, sync, event, dashboard
+
 
 # Page configuration
 st.set_page_config(
