@@ -12,13 +12,13 @@
         }
 
         html, body {
+            width: 100%;
             height: 100%;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
             padding: 20px;
         }
         
@@ -29,6 +29,7 @@
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             padding: 30px;
+            min-height: calc(100vh - 40px);
         }
         
         .header {
@@ -105,7 +106,8 @@
         .matrix-container {
             position: relative;
             width: 100%;
-            height: 700px;
+            min-height: 700px;
+            height: calc(100vh - 240px);
             background: #f8f9fa;
             border: 2px solid #dee2e6;
             border-radius: 10px;
@@ -521,6 +523,7 @@
             font-size: 12px;
         }
     </style>
+    <script src="https://unpkg.com/streamlit-component-lib@latest/dist/index.js"></script>
 </head>
 <body>
     <div class="container">
@@ -681,6 +684,7 @@
         </div>
     </div>
     
+    <script src="https://unpkg.com/@streamlit/component-lib@1.0.0/index.js"></script>
     <script>
         // Application version for cache-busting / verification
         const DASHBOARD_VERSION = '1.1.3';
@@ -1238,26 +1242,32 @@
         
         // Adjust iframe height so the dashboard fills the browser window
         function resizeFrame() {
-            const height = document.documentElement.scrollHeight;
-            window.parent.postMessage({ type: 'streamlit:height', height }, '*');
+            const docHeight = document.documentElement.scrollHeight;
+            const viewportHeight = window.visualViewport ? window.visualViewport.height : 0;
+            const height = Math.max(docHeight, viewportHeight, 1000);
+            Streamlit.setFrameHeight(height);
         }
 
-        // Watch for changes that affect document height
-        function setupResizeObserver() {
+        // Watch for changes and repeatedly set height to avoid race conditions
+        function setupFrameSizing() {
+            resizeFrame();
+            // run again in case Streamlit resets the height after initial render
+            setTimeout(resizeFrame, 100);
+
             if (window.ResizeObserver) {
-                const observer = new ResizeObserver(() => resizeFrame());
-                observer.observe(document.body);
+                new ResizeObserver(resizeFrame).observe(document.body);
+            }
+
+            window.addEventListener('resize', resizeFrame);
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', resizeFrame);
             }
         }
 
-
-        // Initialize on load and set initial height
         window.addEventListener('load', () => {
             init();
-            resizeFrame();
-            setupResizeObserver();
+            setupFrameSizing();
         });
-        window.addEventListener('resize', resizeFrame);
     </script>
 </body>
 </html>
