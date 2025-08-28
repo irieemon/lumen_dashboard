@@ -388,6 +388,7 @@ def create_draggable_matrix():
                         "blue": "#007aff",
                     }
 
+                    # Element key must match the layout item id so the grid can position it.
                     with mui.Paper(
                         key=str(row["id"]),
                         className="drag-handle",
