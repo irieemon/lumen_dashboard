@@ -9,6 +9,7 @@ import sqlite3
 from datetime import datetime, timedelta
 import base64
 import json
+import os
 # streamlit_elements.draggable has been removed; use dashboard.Grid instead
 
 from streamlit_elements import elements, mui, html, sync, event, dashboard
@@ -125,8 +126,19 @@ def init_database():
             timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
-    
+
     conn.commit()
+
+    # Load initial data if the initiatives table is empty
+    c.execute('SELECT COUNT(*) FROM initiatives')
+    if c.fetchone()[0] == 0:
+        csv_path = os.path.join(os.path.dirname(__file__), "lumen_initiatives.csv")
+        if os.path.exists(csv_path):
+            df = pd.read_csv(csv_path)
+            df["is_deleted"] = 0
+            df.to_sql("initiatives", conn, if_exists="append", index=False)
+            conn.commit()
+
     conn.close()
 
 def get_initiatives_from_db():
