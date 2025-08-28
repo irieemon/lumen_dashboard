@@ -3,6 +3,22 @@ from pathlib import Path
 
 from auth import login
 from db import init_db
+from api import app as api_app
+import threading
+
+API_STARTED = False
+
+
+def _start_api() -> None:
+    api_app.run(host="0.0.0.0", port=8000, debug=False, use_reloader=False)
+
+
+def ensure_api_running() -> None:
+    global API_STARTED
+    if not API_STARTED:
+        thread = threading.Thread(target=_start_api, daemon=True)
+        thread.start()
+        API_STARTED = True
 
 
 def main() -> None:
@@ -13,6 +29,7 @@ def main() -> None:
         layout="wide",
     )
 
+    ensure_api_running()
     init_db()
     authenticator, authenticated = login()
     if not authenticated:
@@ -56,9 +73,12 @@ def main() -> None:
             /* Fix the logout button to the bottom-left corner */
             div.stButton > button:first-child {
                 position: fixed;
-                bottom: 20px;
-                left: 20px;
+                bottom: 0;
+                left: 0;
                 z-index: 1000;
+                margin: 0;
+                padding: 0.25rem 0.75rem;
+                font-size: 0.8rem;
             }
         </style>
         """,
