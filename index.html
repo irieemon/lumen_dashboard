@@ -12,8 +12,8 @@
         }
 
         html, body {
-            width: 1000px;
-            height: 1000px;
+            width: 100%;
+            height: 100%;
         }
 
         body {
@@ -1236,19 +1236,38 @@
             }
         }
         
-        // Set a fixed iframe size to troubleshoot resizing issues
-        function setFixedFrame() {
+        // Adjust iframe height so the dashboard fills the browser window
+        function resizeFrame() {
+            const docHeight = document.documentElement.scrollHeight;
+            const viewportHeight = window.visualViewport ? window.visualViewport.height : 0;
+            const height = Math.max(docHeight, viewportHeight, 1000);
             window.parent.postMessage({
                 type: 'streamlit:setFrameHeight',
-                height: 1000,
+                height,
                 isStreamlitMessage: true
             }, '*');
         }
 
-        // Initialize on load and set fixed size
+        // Watch for changes and repeatedly set height to avoid race conditions
+        function setupFrameSizing() {
+            resizeFrame();
+            // run again in case Streamlit resets the height after initial render
+            setTimeout(resizeFrame, 100);
+
+            if (window.ResizeObserver) {
+                new ResizeObserver(resizeFrame).observe(document.body);
+            }
+
+            window.addEventListener('resize', resizeFrame);
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', resizeFrame);
+            }
+        }
+
         window.addEventListener('load', () => {
             init();
-            setFixedFrame();
+            setupFrameSizing();
+
         });
     </script>
 </body>
