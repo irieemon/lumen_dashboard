@@ -5,7 +5,6 @@ from auth import login
 from db import init_db
 from api_server import ensure_api_running
 
-
 def main() -> None:
     """Load and display the static index.html page after authentication."""
     st.set_page_config(
