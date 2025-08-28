@@ -1,31 +1,29 @@
 import streamlit as st
+from pathlib import Path
+
 from auth import login
-from db import init_db, add_initiative
-from ui import load_css, create_draggable_matrix
+from db import init_db
 
 
 def main() -> None:
-    st.set_page_config(page_title="Lumen Strategic Dashboard", page_icon="⊙", layout="wide")
+    """Load and display the static index.html page after authentication."""
+    st.set_page_config(
+        page_title="Lumen Strategic Dashboard",
+        page_icon="⊙",
+        layout="wide",
+    )
+
     init_db()
-    if not login():
+    authenticator, authenticated = login()
+    if not authenticated:
         st.stop()
+    authenticator.logout("Logout", "main")
 
-    load_css()
-    st.title("Lumen Strategic Dashboard")
+    index_path = Path(__file__).with_name("index.html")
+    with index_path.open(encoding="utf-8") as f:
+        html = f.read()
 
-    with st.sidebar:
-        st.header("Add Initiative")
-        with st.form("add_form"):
-            title = st.text_input("Title")
-            details = st.text_area("Details")
-            color = st.selectbox("Color", ["pink", "yellow", "green", "blue"])
-            category = st.text_input("Category")
-            if st.form_submit_button("Add"):
-                add_initiative(title, details, color, category, 50, 50, st.session_state.get("username", "user"))
-                st.success("Added initiative")
-                st.rerun()
-
-    create_draggable_matrix(st.session_state.get("username", "user"))
+    st.components.v1.html(html, height=0, scrolling=True)
 
 
 if __name__ == "__main__":

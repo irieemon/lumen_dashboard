@@ -1,5 +1,6 @@
 import streamlit as st
 import streamlit_authenticator as stauth
+from typing import Tuple
 
 # Pre-hashed password for user "admin" with password "admin"
 _CREDENTIALS = {
@@ -12,8 +13,8 @@ _CREDENTIALS = {
 }
 
 
-def login() -> bool:
-    """Render login form and return authentication status."""
+def login() -> Tuple[stauth.Authenticate, bool]:
+    """Render login form and return the authenticator and status."""
     authenticator = stauth.Authenticate(
         _CREDENTIALS,
         "lumen_dashboard",
@@ -24,8 +25,6 @@ def login() -> bool:
     auth_status = st.session_state.get("authentication_status")
     if auth_status:
         st.session_state["username"] = st.session_state.get("username")
-        authenticator.logout("Logout", "sidebar")
-        return True
     elif auth_status is False:
         st.error("Invalid credentials")
-    return False
+    return authenticator, bool(auth_status)
