@@ -12,13 +12,13 @@
         }
 
         html, body {
-            height: 100%;
+            width: 1000px;
+            height: 1000px;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
             padding: 20px;
         }
         
@@ -1236,28 +1236,20 @@
             }
         }
         
-        // Adjust iframe height so the dashboard fills the browser window
-        function resizeFrame() {
-            const height = document.documentElement.scrollHeight;
-            window.parent.postMessage({ type: 'streamlit:height', height }, '*');
+        // Set a fixed iframe size to troubleshoot resizing issues
+        function setFixedFrame() {
+            window.parent.postMessage({
+                type: 'streamlit:setFrameHeight',
+                height: 1000,
+                isStreamlitMessage: true
+            }, '*');
         }
 
-        // Watch for changes that affect document height
-        function setupResizeObserver() {
-            if (window.ResizeObserver) {
-                const observer = new ResizeObserver(() => resizeFrame());
-                observer.observe(document.body);
-            }
-        }
-
-
-        // Initialize on load and set initial height
+        // Initialize on load and set fixed size
         window.addEventListener('load', () => {
             init();
-            resizeFrame();
-            setupResizeObserver();
+            setFixedFrame();
         });
-        window.addEventListener('resize', resizeFrame);
     </script>
 </body>
 </html>
