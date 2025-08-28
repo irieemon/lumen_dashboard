@@ -33,26 +33,9 @@ def main() -> None:
                 padding: 0;
                 margin: 0;
             }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    st.markdown(
-        """
-        <style>
-            /* Remove Streamlit's default padding and background so the
-               embedded dashboard can span edge-to-edge without a white border */
-            div[data-testid="stAppViewContainer"] {
-                padding: 0;
-                background: transparent;
-            }
-            div[data-testid="stAppViewContainer"] > .main {
-                padding: 0;
-            }
-            div[data-testid="stAppViewContainer"] > .main .block-container {
-                padding: 0;
-                margin: 0;
+            /* Hide Streamlit's default header to remove extra white space */
+            header[data-testid="stHeader"] {
+                display: none;
             }
         </style>
         """,
@@ -64,9 +47,9 @@ def main() -> None:
         html = f.read()
 
     st.components.v1.html(html, height=1000, scrolling=False)
+
     # Place logout button below the dashboard instead of at the top
     authenticator.logout("Logout", "main")
-
 
 
 if __name__ == "__main__":
