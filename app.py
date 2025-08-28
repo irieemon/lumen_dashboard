@@ -23,7 +23,7 @@ def main() -> None:
     with index_path.open(encoding="utf-8") as f:
         html = f.read()
 
-    st.components.v1.html(html, height=0, scrolling=True)
+    st.components.v1.html(html, height=0, scrolling=False)
 
 
 if __name__ == "__main__":
