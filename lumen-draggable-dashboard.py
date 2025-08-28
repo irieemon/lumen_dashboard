@@ -9,7 +9,7 @@ import sqlite3
 from datetime import datetime, timedelta
 import base64
 import json
-from streamlit_elements import elements, mui, html, dashboard
+from streamlit_elements import elements, mui, html, sync, event, dashboard
 
 # Page configuration
 st.set_page_config(
@@ -258,6 +258,7 @@ def create_draggable_matrix():
         st.rerun()
 
     # Create the elements container
+
     with elements("matrix"):
         with mui.Box(
             sx={
