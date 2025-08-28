@@ -19,6 +19,27 @@ def main() -> None:
         st.stop()
     authenticator.logout("Logout", "main")
 
+    st.markdown(
+        """
+        <style>
+            /* Remove Streamlit's default padding and background so the
+               embedded dashboard can span edge-to-edge without a white border */
+            div[data-testid="stAppViewContainer"] {
+                padding: 0;
+                background: transparent;
+            }
+            div[data-testid="stAppViewContainer"] > .main {
+                padding: 0;
+            }
+            div[data-testid="stAppViewContainer"] > .main .block-container {
+                padding: 0;
+                margin: 0;
+            }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
     index_path = Path(__file__).with_name("index.html")
     with index_path.open(encoding="utf-8") as f:
         html = f.read()
