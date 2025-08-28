@@ -1,6 +1,6 @@
 """
 Lumen Workshop Strategic Initiative Dashboard
-Professional Streamlit Application with Database Persistence
+Apple Design Language - Clean, Minimal, Functional
 """
 
 import streamlit as st
@@ -20,7 +20,7 @@ import streamlit.components.v1 as components
 # Page configuration
 st.set_page_config(
     page_title="Lumen Strategic Dashboard",
-    page_icon="🎯",
+    page_icon="⊙",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -28,21 +28,21 @@ st.set_page_config(
 # Database configuration
 DB_PATH = "lumen_dashboard.db"
 
-# Professional CSS styling
+# Apple-inspired CSS styling
 def load_css():
     st.markdown("""
     <style>
-    /* Import Google Fonts */
+    /* Import SF Pro Display font (Apple's system font fallback) */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
     
-    /* Global Styles */
+    /* Global Styles - Apple Design Language */
     * {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
     }
     
     .main {
         padding: 0;
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        background: #ffffff;
         min-height: 100vh;
     }
     
@@ -51,431 +51,352 @@ def load_css():
     footer {visibility: hidden;}
     header {visibility: hidden;}
     
-    /* Custom Header */
+    /* Custom Header - Apple Style */
     .dashboard-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 1.5rem 2rem;
-        border-radius: 0 0 20px 20px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        background: linear-gradient(180deg, #000000 0%, #1d1d1f 100%);
+        color: #ffffff;
+        padding: 2rem 2rem;
         margin: -1rem -1rem 2rem -1rem;
+        border-bottom: 1px solid #424245;
     }
     
     .dashboard-header h1 {
         margin: 0;
-        font-size: 2rem;
+        font-size: 2.5rem;
         font-weight: 700;
-        letter-spacing: -0.5px;
+        letter-spacing: -0.03em;
+        background: linear-gradient(180deg, #ffffff 0%, #86868b 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
     
     .dashboard-header p {
         margin: 0.5rem 0 0 0;
-        opacity: 0.9;
-        font-size: 1rem;
+        color: #86868b;
+        font-size: 1.125rem;
+        font-weight: 400;
     }
     
-    /* Card Styles */
-    .initiative-card {
-        background: white;
-        border-radius: 12px;
-        padding: 1rem;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        cursor: move;
-        position: relative;
-        border-left: 4px solid;
-        margin: 0.5rem;
+    /* Card Styles - Apple Style */
+    .metric-card {
+        background: #ffffff;
+        border: 1px solid #d2d2d7;
+        padding: 1.5rem;
+        transition: all 0.2s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     }
     
-    .initiative-card:hover {
+    .metric-card:hover {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         transform: translateY(-2px);
-        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
     }
     
-    .initiative-card.pink {
-        border-left-color: #ff69b4;
-        background: linear-gradient(135deg, #fff 0%, #fff0f8 100%);
-    }
-    
-    .initiative-card.yellow {
-        border-left-color: #ffd700;
-        background: linear-gradient(135deg, #fff 0%, #fffef0 100%);
-    }
-    
-    .initiative-card.green {
-        border-left-color: #48c774;
-        background: linear-gradient(135deg, #fff 0%, #f0fff4 100%);
-    }
-    
-    .initiative-card.blue {
-        border-left-color: #3273dc;
-        background: linear-gradient(135deg, #fff 0%, #f0f7ff 100%);
-    }
-    
-    /* Matrix Container */
+    /* Matrix Container - Clean Design */
     .matrix-wrapper {
-        background: white;
-        border-radius: 20px;
-        padding: 2rem;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+        background: #ffffff;
+        border: 1px solid #d2d2d7;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
         position: relative;
         margin: 1rem 0;
     }
     
-    .matrix-container {
-        position: relative;
-        width: 100%;
-        height: 700px;
-        background: linear-gradient(135deg, #fafafa 0%, #f0f0f0 100%);
-        border-radius: 16px;
-        overflow: hidden;
-        border: 2px solid #e1e4e8;
-    }
-    
-    /* Quadrant Labels */
-    .quadrant-overlay {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        z-index: 5;
-    }
-    
-    .quadrant-label {
-        position: absolute;
-        padding: 0.5rem 1rem;
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 0.875rem;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-    
-    .quadrant-label.quick-wins {
-        color: #10b981;
-        border: 2px solid #10b98133;
-        background: rgba(16, 185, 129, 0.05);
-    }
-    
-    .quadrant-label.strategic {
-        color: #3b82f6;
-        border: 2px solid #3b82f633;
-        background: rgba(59, 130, 246, 0.05);
-    }
-    
-    .quadrant-label.consider {
-        color: #f59e0b;
-        border: 2px solid #f59e0b33;
-        background: rgba(245, 158, 11, 0.05);
-    }
-    
-    .quadrant-label.low-priority {
-        color: #ef4444;
-        border: 2px solid #ef444433;
-        background: rgba(239, 68, 68, 0.05);
-    }
-    
-    /* Buttons */
+    /* Buttons - Apple Style */
     .stButton > button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        background: #000000;
+        color: #ffffff;
         border: none;
         padding: 0.75rem 1.5rem;
-        border-radius: 10px;
-        font-weight: 600;
-        font-size: 0.95rem;
-        letter-spacing: 0.3px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        border-radius: 0.5rem;
+        font-weight: 500;
+        font-size: 0.9375rem;
+        letter-spacing: -0.01em;
+        transition: all 0.2s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
     }
     
     .stButton > button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 25px rgba(102, 126, 234, 0.4);
+        background: #1d1d1f;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
+        transform: translateY(-1px);
+    }
+    
+    /* Secondary Button Style */
+    .secondary-button {
+        background: #f5f5f7 !important;
+        color: #000000 !important;
+        border: 1px solid #d2d2d7 !important;
+    }
+    
+    .secondary-button:hover {
+        background: #e8e8ed !important;
     }
     
     /* Metrics Cards */
     div[data-testid="metric-container"] {
-        background: white;
-        padding: 1.5rem;
-        border-radius: 12px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
-        border-left: 4px solid #667eea;
-        transition: all 0.3s ease;
+        background: #ffffff;
+        padding: 1.25rem;
+        border: 1px solid #d2d2d7;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        transition: all 0.2s ease;
     }
     
     div[data-testid="metric-container"]:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        transform: translateY(-1px);
     }
     
-    /* Sidebar Styling */
+    div[data-testid="metric-container"] label {
+        color: #86868b;
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    div[data-testid="metric-container"] div[data-testid="metric-value"] {
+        color: #1d1d1f;
+        font-size: 2rem;
+        font-weight: 600;
+    }
+    
+    /* Sidebar Styling - Dark Mode */
     section[data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
-        color: white;
+        background: #1d1d1f;
+        border-right: 1px solid #424245;
     }
     
     section[data-testid="stSidebar"] .stButton > button {
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        color: white;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #ffffff;
+        font-weight: 400;
     }
     
     section[data-testid="stSidebar"] .stButton > button:hover {
-        background: rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.12);
     }
     
-    /* Tab Styling */
+    /* Tab Styling - Apple Style */
     .stTabs [data-baseweb="tab-list"] {
         background: transparent;
-        gap: 2rem;
+        gap: 0;
         padding: 0;
+        border-bottom: 1px solid #d2d2d7;
     }
     
     .stTabs [data-baseweb="tab"] {
         background: transparent;
-        color: #64748b;
-        border-bottom: 2px solid transparent;
-        padding: 0.5rem 1rem;
+        color: #86868b;
+        border: none;
+        padding: 1rem 1.5rem;
         font-weight: 500;
-        transition: all 0.3s ease;
+        font-size: 0.9375rem;
+        transition: all 0.2s ease;
+        border-bottom: 2px solid transparent;
+        letter-spacing: -0.01em;
     }
     
     .stTabs [data-baseweb="tab"]:hover {
-        color: #667eea;
+        color: #1d1d1f;
     }
     
     .stTabs [aria-selected="true"] {
-        color: #667eea;
-        border-bottom: 2px solid #667eea;
+        color: #000000;
+        border-bottom: 2px solid #000000;
         background: transparent;
     }
     
-    /* Forms */
+    /* Forms - Apple Style */
     .stTextInput > div > div > input,
     .stTextArea > div > div > textarea,
     .stSelectbox > div > div > select {
-        border-radius: 10px;
-        border: 2px solid #e1e4e8;
+        border-radius: 0.5rem;
+        border: 1px solid #d2d2d7;
         padding: 0.75rem;
-        font-size: 0.95rem;
-        transition: all 0.3s ease;
+        font-size: 0.9375rem;
+        transition: all 0.2s ease;
+        background: #ffffff;
     }
     
     .stTextInput > div > div > input:focus,
     .stTextArea > div > div > textarea:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        border-color: #0071e3;
+        box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1);
+        outline: none;
     }
     
-    /* Expander */
+    /* Sliders - Apple Style */
+    .stSlider > div > div > div {
+        background: #d2d2d7;
+    }
+    
+    .stSlider > div > div > div > div {
+        background: #000000;
+    }
+    
+    /* Expander - Apple Style */
     .streamlit-expanderHeader {
-        background: white;
-        border-radius: 10px;
-        border: 2px solid #e1e4e8;
+        background: #f5f5f7;
+        border: 1px solid #d2d2d7;
+        border-radius: 0.5rem;
         padding: 1rem;
-        font-weight: 600;
-        transition: all 0.3s ease;
+        font-weight: 500;
+        transition: all 0.2s ease;
     }
     
     .streamlit-expanderHeader:hover {
-        border-color: #667eea;
-        background: #fafbff;
+        background: #e8e8ed;
     }
     
-    /* Activity Feed */
+    /* Activity Feed - Clean Design */
     .activity-item {
-        background: white;
-        border-radius: 10px;
+        background: #ffffff;
+        border: 1px solid #d2d2d7;
         padding: 1rem;
         margin: 0.5rem 0;
         border-left: 3px solid;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
     }
     
     .activity-item:hover {
-        transform: translateX(5px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        transform: translateX(2px);
     }
     
     .activity-item.create {
-        border-left-color: #10b981;
+        border-left-color: #34c759;
     }
     
     .activity-item.update {
-        border-left-color: #3b82f6;
+        border-left-color: #007aff;
     }
     
     .activity-item.delete {
-        border-left-color: #ef4444;
+        border-left-color: #ff3b30;
     }
     
-    /* Tooltips */
-    .tooltip {
-        position: relative;
-        display: inline-block;
+    .activity-item.move {
+        border-left-color: #5856d6;
     }
     
-    .tooltip .tooltiptext {
-        visibility: hidden;
-        width: 200px;
-        background-color: #1a1a2e;
-        color: white;
-        text-align: center;
-        border-radius: 8px;
-        padding: 0.5rem;
-        position: absolute;
-        z-index: 1000;
-        bottom: 125%;
-        left: 50%;
-        margin-left: -100px;
-        opacity: 0;
-        transition: opacity 0.3s;
+    /* Info boxes */
+    .stAlert {
+        border-radius: 0.5rem;
+        border: 1px solid #d2d2d7;
+    }
+    
+    /* Selectbox */
+    div[data-baseweb="select"] {
+        border-radius: 0.5rem;
+    }
+    
+    /* Remove all remaining rounded corners */
+    * {
+        border-radius: 0.5rem !important;
+    }
+    
+    /* Data tables */
+    .dataframe {
+        border: 1px solid #d2d2d7 !important;
         font-size: 0.875rem;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
     
-    .tooltip:hover .tooltiptext {
-        visibility: visible;
-        opacity: 1;
+    .dataframe thead tr th {
+        background: #f5f5f7 !important;
+        color: #1d1d1f !important;
+        font-weight: 600 !important;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
     }
     
-    /* Animations */
-    @keyframes slideIn {
-        from {
-            transform: translateY(20px);
-            opacity: 0;
-        }
-        to {
-            transform: translateY(0);
-            opacity: 1;
-        }
+    /* Success/Error/Warning/Info Messages */
+    .stSuccess, .stError, .stWarning, .stInfo {
+        border-radius: 0.5rem;
     }
     
-    .animate-slide-in {
-        animation: slideIn 0.5s ease;
-    }
-    
-    /* Responsive Design */
-    @media (max-width: 768px) {
-        .dashboard-header h1 {
-            font-size: 1.5rem;
-        }
-        
-        .matrix-container {
-            height: 500px;
-        }
-        
-        .stButton > button {
-            padding: 0.5rem 1rem;
-            font-size: 0.875rem;
-        }
-    }
-    
-    /* Add New Card Button */
-    .add-card-btn {
-        position: fixed;
-        bottom: 2rem;
-        right: 2rem;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        color: white;
-        border: none;
-        box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
-        font-size: 2rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        z-index: 1000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .add-card-btn:hover {
-        transform: scale(1.1) rotate(90deg);
-        box-shadow: 0 6px 30px rgba(16, 185, 129, 0.5);
+    /* Plotly Chart Styling */
+    .js-plotly-plot {
+        border: 1px solid #d2d2d7;
+        border-radius: 0.5rem;
+        overflow: hidden;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# Create Interactive Plotly Matrix
+# Create Interactive Plotly Matrix with Draggable Points
 def create_interactive_matrix():
-    """Create an interactive matrix using Plotly with editable cards"""
+    """Create an interactive matrix using Plotly with individually draggable points"""
     
     df = get_initiatives_from_db()
     
     fig = go.Figure()
     
-    # Add quadrant backgrounds
+    # Add quadrant backgrounds with Apple-style colors
     shapes = [
-        # Quick Wins (top-left) - High Value, Low Effort
+        # Quick Wins (top-left) - Green tint
         dict(type="rect", x0=0, y0=66.66, x1=50, y1=100,
-             fillcolor="rgba(16, 185, 129, 0.1)", line=dict(width=0)),
-        # Strategic Investments (top-right) - High Value, High Effort
+             fillcolor="rgba(52, 199, 89, 0.05)", line=dict(width=0)),
+        # Strategic (top-right) - Blue tint
         dict(type="rect", x0=50, y0=66.66, x1=100, y1=100,
-             fillcolor="rgba(59, 130, 246, 0.1)", line=dict(width=0)),
-        # Low Priority (bottom-left) - Low Value, Low Effort
+             fillcolor="rgba(0, 122, 255, 0.05)", line=dict(width=0)),
+        # Low Priority (bottom-left) - Gray tint
         dict(type="rect", x0=0, y0=0, x1=50, y1=33.33,
-             fillcolor="rgba(239, 68, 68, 0.1)", line=dict(width=0)),
-        # Consider Carefully (bottom-right) - Low Value, High Effort
+             fillcolor="rgba(142, 142, 147, 0.05)", line=dict(width=0)),
+        # Consider (bottom-right) - Orange tint
         dict(type="rect", x0=50, y0=0, x1=100, y1=33.33,
-             fillcolor="rgba(245, 158, 11, 0.1)", line=dict(width=0))
+             fillcolor="rgba(255, 149, 0, 0.05)", line=dict(width=0))
     ]
     
-    # Add grid lines
+    # Add grid lines - thin and subtle
     shapes.extend([
         dict(type="line", x0=0, y0=33.33, x1=100, y1=33.33,
-             line=dict(color="#e1e4e8", width=1, dash="dash")),
+             line=dict(color="#d2d2d7", width=1)),
         dict(type="line", x0=0, y0=66.66, x1=100, y1=66.66,
-             line=dict(color="#e1e4e8", width=1, dash="dash")),
+             line=dict(color="#d2d2d7", width=1)),
         dict(type="line", x0=50, y0=0, x1=50, y1=100,
-             line=dict(color="#e1e4e8", width=1, dash="dash"))
+             line=dict(color="#d2d2d7", width=1))
     ])
     
     if not df.empty:
-        # Color mapping
+        # Apple-style color mapping
         color_map = {
-            "pink": "#ff69b4",
-            "yellow": "#ffd700", 
-            "green": "#48c774",
-            "blue": "#3273dc"
+            "pink": "#ff3b30",    # Red
+            "yellow": "#ffcc00",   # Yellow
+            "green": "#34c759",    # Green
+            "blue": "#007aff"      # Blue
         }
         
-        # Create scatter plot with cards
-        for _, row in df.iterrows():
-            fig.add_trace(go.Scatter(
-                x=[row['x']],
-                y=[row['y']],
-                mode='markers+text',
-                marker=dict(
-                    size=40,
-                    color=color_map.get(row['color'], '#cccccc'),
-                    line=dict(width=2, color='white'),
-                    opacity=0.9
-                ),
-                text=row['title'][:20] + '...' if len(row['title']) > 20 else row['title'],
-                textposition="middle center",
-                textfont=dict(size=10, color='white', family='Inter'),
-                hovertemplate=(
-                    f"<b>{row['title']}</b><br>"
-                    f"{row['details']}<br>"
-                    f"<br>Category: {row['category']}"
-                    f"<br>Value: {row['value']}"
-                    f"<br>Effort: {row['effort']}"
-                    f"<br>Last updated: {row['updated_by']}"
-                    "<extra></extra>"
-                ),
-                showlegend=False,
-                customdata=[row['id']],
-                name=row['title']
-            ))
+        # Create editable scatter plot
+        fig.add_trace(go.Scatter(
+            x=df['x'].tolist(),
+            y=df['y'].tolist(),
+            mode='markers+text',
+            marker=dict(
+                size=50,
+                color=[color_map.get(c, '#8e8e93') for c in df['color'].tolist()],
+                line=dict(width=2, color='white'),
+                opacity=0.95
+            ),
+            text=[t[:15] + '...' if len(t) > 15 else t for t in df['title'].tolist()],
+            textposition="middle center",
+            textfont=dict(size=10, color='white', family='-apple-system, BlinkMacSystemFont', weight=500),
+            hovertemplate=[
+                f"<b>{row['title']}</b><br>"
+                f"{row['details']}<br>"
+                f"<br>Category: {row['category']}"
+                f"<br>Value: {row['value']}"
+                f"<br>Effort: {row['effort']}"
+                f"<br>Last updated: {row['updated_by']}"
+                "<extra></extra>"
+                for _, row in df.iterrows()
+            ],
+            customdata=df[['id', 'title', 'details', 'category', 'color']].values.tolist(),
+            showlegend=False
+        ))
     
-    # Update layout
+    # Update layout with Apple design language
     fig.update_layout(
         xaxis=dict(
             title="<b>Effort →</b>",
@@ -484,7 +405,8 @@ def create_interactive_matrix():
             tickvals=[0, 50, 100],
             ticktext=['Low', 'Medium', 'High'],
             showgrid=False,
-            zeroline=False
+            zeroline=False,
+            tickfont=dict(family='-apple-system', size=12, color='#86868b')
         ),
         yaxis=dict(
             title="<b>Value →</b>",
@@ -493,35 +415,43 @@ def create_interactive_matrix():
             tickvals=[0, 33.33, 66.66, 100],
             ticktext=['Low', 'Medium', 'Medium', 'High'],
             showgrid=False,
-            zeroline=False
+            zeroline=False,
+            tickfont=dict(family='-apple-system', size=12, color='#86868b')
         ),
         shapes=shapes,
         annotations=[
             dict(text="<b>QUICK WINS</b>", x=25, y=85, showarrow=False, 
-                 font=dict(size=14, color="#10b981", family="Inter")),
+                 font=dict(size=12, color="#34c759", family='-apple-system')),
             dict(text="<b>STRATEGIC</b>", x=75, y=85, showarrow=False, 
-                 font=dict(size=14, color="#3b82f6", family="Inter")),
+                 font=dict(size=12, color="#007aff", family='-apple-system')),
             dict(text="<b>LOW PRIORITY</b>", x=25, y=15, showarrow=False, 
-                 font=dict(size=14, color="#ef4444", family="Inter")),
+                 font=dict(size=12, color="#8e8e93", family='-apple-system')),
             dict(text="<b>CONSIDER</b>", x=75, y=15, showarrow=False, 
-                 font=dict(size=14, color="#f59e0b", family="Inter"))
+                 font=dict(size=12, color="#ff9500", family='-apple-system'))
         ],
         height=700,
         hovermode='closest',
-        dragmode='pan',
-        plot_bgcolor='#fafafa',
-        paper_bgcolor='white',
+        dragmode='select',  # Allow selecting points
+        plot_bgcolor='#ffffff',
+        paper_bgcolor='#ffffff',
         margin=dict(l=60, r=20, t=20, b=60),
-        font=dict(family="Inter, sans-serif")
+        font=dict(family='-apple-system, BlinkMacSystemFont')
     )
     
-    # Make it interactive
-    fig.update_traces(
-        selected=dict(marker=dict(size=50)),
-        unselected=dict(marker=dict(opacity=0.5))
-    )
+    # Enable editable mode for dragging points
+    config = {
+        'editable': True,
+        'edits': {
+            'shapePosition': True,
+            'annotationPosition': False
+        },
+        'displayModeBar': True,
+        'displaylogo': False,
+        'modeBarButtonsToRemove': ['pan2d', 'lasso2d', 'autoScale2d', 'hoverClosestCartesian', 'hoverCompareCartesian'],
+        'modeBarButtonsToAdd': []
+    }
     
-    return fig
+    return fig, config
 
 # Database functions (keep existing ones and add these)
 def update_position(id, x, y, user="user"):
