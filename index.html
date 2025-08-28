@@ -677,6 +677,7 @@
     <script>
         // Application version for cache-busting / verification
         const DASHBOARD_VERSION = '1.1.1';
+
         // Initiative data
         let initiatives = [
             {id: 1, title: "Prioritize CommMgmt Strategy", details: "Establish clear communication management strategy and framework", color: "pink", category: "Strategic/Process", initialX: 10, initialY: 15},
@@ -1235,8 +1236,20 @@
             }
         }
         
-        // Initialize on load
-        window.addEventListener('load', init);
+        // Adjust iframe height so the dashboard fills the browser window
+        function resizeFrame() {
+            const height = document.documentElement.scrollHeight;
+            if (window.Streamlit) {
+                window.Streamlit.setFrameHeight(height);
+            }
+        }
+
+        // Initialize on load and set initial height
+        window.addEventListener('load', () => {
+            init();
+            resizeFrame();
+        });
+        window.addEventListener('resize', resizeFrame);
     </script>
 </body>
 </html>

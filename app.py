@@ -14,14 +14,17 @@ def main() -> None:
     )
 
     init_db()
-    if not login():
+    authenticator, authenticated = login()
+    if not authenticated:
         st.stop()
+    authenticator.logout("Logout", "main")
 
     index_path = Path(__file__).with_name("index.html")
     with index_path.open(encoding="utf-8") as f:
         html = f.read()
 
-    st.components.v1.html(html, height=900, scrolling=True)
+    st.components.v1.html(html, height=0, scrolling=True)
+
 
 
 if __name__ == "__main__":
