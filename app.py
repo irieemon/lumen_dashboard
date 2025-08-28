@@ -24,7 +24,10 @@ def main() -> None:
             html, body {
                 margin: 0;
                 padding: 0;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                height: 100%;
+                min-height: 100vh;
+                /* Highlight the outer container (formerly purple) in red */
+                background: red;
             }
 
             div[data-testid="stApp"] {
@@ -49,6 +52,14 @@ def main() -> None:
             header[data-testid="stHeader"] {
                 display: none;
             }
+
+            /* Fix the logout button to the bottom-left corner */
+            div.stButton > button:first-child {
+                position: fixed;
+                bottom: 20px;
+                left: 20px;
+                z-index: 1000;
+            }
         </style>
         """,
         unsafe_allow_html=True,
@@ -58,6 +69,7 @@ def main() -> None:
     with index_path.open(encoding="utf-8") as f:
         html = f.read()
 
+    # Provide an initial height; the embedded page will resize itself
     st.components.v1.html(html, height=1000, scrolling=False)
 
     # Place logout button below the dashboard instead of at the top
