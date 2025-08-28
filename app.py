@@ -72,6 +72,7 @@ def main() -> None:
     # Provide an initial height; the embedded page will resize itself
     st.components.v1.html(html, height=1000, scrolling=False)
 
+
     # Place logout button below the dashboard instead of at the top
     authenticator.logout("Logout", "main")
 
