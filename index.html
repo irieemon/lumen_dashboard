@@ -681,6 +681,7 @@
         </div>
     </div>
     
+    <script src="https://unpkg.com/@streamlit/component-lib@1.0.0/index.js"></script>
     <script>
         // Application version for cache-busting / verification
         const DASHBOARD_VERSION = '1.1.3';
@@ -1241,11 +1242,8 @@
             const docHeight = document.documentElement.scrollHeight;
             const viewportHeight = window.visualViewport ? window.visualViewport.height : 0;
             const height = Math.max(docHeight, viewportHeight, 1000);
-            window.parent.postMessage({
-                type: 'streamlit:setFrameHeight',
-                height,
-                isStreamlitMessage: true
-            }, '*');
+            Streamlit.setFrameHeight(height);
+
         }
 
         // Watch for changes and repeatedly set height to avoid race conditions
@@ -1267,7 +1265,6 @@
         window.addEventListener('load', () => {
             init();
             setupFrameSizing();
-
         });
     </script>
 </body>
