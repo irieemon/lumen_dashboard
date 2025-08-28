@@ -766,109 +766,154 @@ def show_login():
                     st.error("Invalid credentials")
 
 def show_dashboard():
-    """Display the modern dashboard"""
+    """Display the modern dashboard with Apple design language"""
     load_css()
     
-    # Custom header
+    # Custom header with Apple style
     st.markdown(f"""
     <div class="dashboard-header">
         <h1>Lumen Strategic Dashboard</h1>
-        <p>Welcome, {st.session_state.username} · Strategic Initiative Planning</p>
+        <p>{st.session_state.username} · Strategic Initiative Planning</p>
     </div>
     """, unsafe_allow_html=True)
     
-    # Main tabs
-    tab1, tab2, tab3, tab4 = st.tabs(["🎯 Strategy Matrix", "📊 Analytics", "📋 Data View", "📜 Activity Log"])
+    # Main tabs with cleaner icons
+    tab1, tab2, tab3, tab4 = st.tabs(["⊙ Strategy Matrix", "◉ Analytics", "☰ Data View", "◎ Activity"])
     
     with tab1:
         # Interactive Matrix
         st.markdown("### Interactive Strategy Matrix")
+        st.markdown("*Click and drag points to reposition · Click points to edit details*")
         
-        # Create two columns for matrix and controls
-        col1, col2 = st.columns([4, 1])
+        # Get the figure and config
+        fig, config = create_interactive_matrix()
         
-        with col1:
-            # Display the Plotly matrix
-            fig = create_interactive_matrix()
-            st.plotly_chart(fig, use_container_width=True, key="matrix_plot")
+        # Display the interactive plot
+        selected_points = st.plotly_chart(
+            fig, 
+            use_container_width=True, 
+            config=config,
+            key="matrix_plot",
+            on_select="rerun",  # Rerun when points are selected
+            selection_mode="points"  # Allow point selection
+        )
         
-        with col2:
-            st.markdown("### Quick Actions")
-            
-            # Add new initiative
-            if st.button("➕ Add Initiative", use_container_width=True):
-                st.session_state.show_add_form = True
-            
-            # Edit selected initiative
-            st.markdown("### Edit Initiative")
-            df = get_initiatives_from_db()
-            if not df.empty:
-                selected_title = st.selectbox(
-                    "Select to edit:",
-                    ["Choose..."] + df['title'].tolist(),
-                    key="edit_select"
-                )
-                
-                if selected_title != "Choose...":
-                    selected = df[df['title'] == selected_title].iloc[0]
+        # Handle selected points for editing
+        if selected_points and selected_points.selection.points:
+            selected_data = selected_points.selection.points
+            if selected_data:
+                # Get the first selected point
+                point_data = selected_data[0]
+                if 'customdata' in point_data:
+                    initiative_id = point_data['customdata'][0]
                     
-                    with st.form(key=f"edit_form_{selected['id']}"):
-                        new_title = st.text_input("Title", value=selected['title'])
-                        new_details = st.text_area("Details", value=selected.get('details', ''))
-                        new_x = st.slider("Effort", 0, 100, int(selected['x']))
-                        new_y = st.slider("Value", 0, 100, int(selected['y']))
-                        
+                    # Show edit form for selected initiative
+                    st.markdown("---")
+                    st.markdown("### ✏️ Edit Selected Initiative")
+                    
+                    df = get_initiatives_from_db()
+                    selected_init = df[df['id'] == initiative_id].iloc[0]
+                    
+                    with st.form(key=f"edit_selected_{initiative_id}"):
                         col1, col2 = st.columns(2)
+                        
                         with col1:
-                            if st.form_submit_button("💾 Save", use_container_width=True):
-                                update_initiative_in_db(
-                                    selected['id'], new_title, new_details, 
-                                    new_x, new_y, st.session_state.username
-                                )
-                                st.success("Updated!")
+                            new_title = st.text_input("Title", value=selected_init['title'])
+                            new_category = st.selectbox(
+                                "Category",
+                                ["Strategic/Process", "Quick Implementation", 
+                                 "Technology/Platform", "People/Organization"],
+                                index=["Strategic/Process", "Quick Implementation", 
+                                       "Technology/Platform", "People/Organization"].index(selected_init['category'])
+                            )
+                            new_color = st.selectbox(
+                                "Color",
+                                ["pink", "yellow", "green", "blue"],
+                                index=["pink", "yellow", "green", "blue"].index(selected_init['color'])
+                            )
+                        
+                        with col2:
+                            new_details = st.text_area("Details", value=selected_init.get('details', ''))
+                            new_x = st.slider("Effort (0=Low, 100=High)", 0, 100, int(selected_init['x']))
+                            new_y = st.slider("Value (0=Low, 100=High)", 0, 100, int(selected_init['y']))
+                        
+                        col1, col2, col3 = st.columns(3)
+                        with col1:
+                            if st.form_submit_button("💾 Update", use_container_width=True):
+                                # Update all fields including category and color
+                                conn = sqlite3.connect(DB_PATH)
+                                c = conn.cursor()
+                                value = get_value_from_position(new_y)
+                                effort = get_effort_from_position(new_x)
+                                
+                                c.execute('''
+                                    UPDATE initiatives 
+                                    SET title = ?, details = ?, category = ?, color = ?, 
+                                        x = ?, y = ?, value = ?, effort = ?, 
+                                        updated_at = CURRENT_TIMESTAMP, updated_by = ?
+                                    WHERE id = ?
+                                ''', (new_title, new_details, new_category, new_color, 
+                                      new_x, new_y, value, effort, st.session_state.username, initiative_id))
+                                
+                                # Log the action
+                                c.execute('''
+                                    INSERT INTO audit_log (action, initiative_id, initiative_title, user, details)
+                                    VALUES (?, ?, ?, ?, ?)
+                                ''', ('UPDATE', initiative_id, new_title, st.session_state.username, 
+                                      f"Updated initiative: {new_title}"))
+                                
+                                conn.commit()
+                                conn.close()
+                                st.success("Updated successfully!")
                                 st.rerun()
+                        
                         with col2:
                             if st.form_submit_button("🗑️ Delete", use_container_width=True):
-                                delete_initiative_from_db(
-                                    selected['id'], selected['title'], 
-                                    st.session_state.username
-                                )
-                                st.success("Deleted!")
+                                delete_initiative_from_db(initiative_id, selected_init['title'], st.session_state.username)
+                                st.success("Deleted successfully!")
+                                st.rerun()
+                        
+                        with col3:
+                            if st.form_submit_button("Cancel", use_container_width=True):
                                 st.rerun()
         
-        # Add new initiative form (popup-style)
+        # Add new initiative section
+        st.markdown("---")
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            if st.button("➕ Add New Initiative", use_container_width=True):
+                st.session_state.show_add_form = True
+        
+        # Add new initiative form
         if hasattr(st.session_state, 'show_add_form') and st.session_state.show_add_form:
-            with st.container():
-                st.markdown("---")
-                st.markdown("### 🆕 Add New Initiative")
+            st.markdown("---")
+            st.markdown("### ➕ Add New Initiative")
+            
+            with st.form(key="add_new_form"):
+                col1, col2 = st.columns(2)
                 
-                with st.form(key="add_new_form"):
-                    col1, col2 = st.columns(2)
-                    
-                    with col1:
-                        title = st.text_input("Title*", key="new_title")
-                        category = st.selectbox(
-                            "Category*",
-                            ["Strategic/Process", "Quick Implementation", 
-                             "Technology/Platform", "People/Organization"],
-                            key="new_category"
-                        )
-                        x_pos = st.slider("Effort (0=Low, 100=High)", 0, 100, 50, key="new_x")
-                    
-                    with col2:
-                        details = st.text_area("Details", key="new_details")
-                        color = st.selectbox(
-                            "Color*",
-                            ["pink", "yellow", "green", "blue"],
-                            key="new_color"
-                        )
-                        y_pos = st.slider("Value (0=Low, 100=High)", 0, 100, 50, key="new_y")
-                    
-                    col1, col2, col3 = st.columns(3)
-                    with col2:
-                        submitted = st.form_submit_button("Add Initiative", use_container_width=True)
-                        
-                    if submitted:
+                with col1:
+                    title = st.text_input("Title*", key="new_title")
+                    category = st.selectbox(
+                        "Category*",
+                        ["Strategic/Process", "Quick Implementation", 
+                         "Technology/Platform", "People/Organization"],
+                        key="new_category"
+                    )
+                    color = st.selectbox(
+                        "Color*",
+                        ["pink", "yellow", "green", "blue"],
+                        key="new_color"
+                    )
+                
+                with col2:
+                    details = st.text_area("Details", key="new_details")
+                    x_pos = st.slider("Effort (0=Low, 100=High)", 0, 100, 50, key="new_x")
+                    y_pos = st.slider("Value (0=Low, 100=High)", 0, 100, 50, key="new_y")
+                
+                col1, col2 = st.columns(2)
+                with col1:
+                    if st.form_submit_button("Add Initiative", use_container_width=True):
                         if title:
                             add_initiative_to_db(
                                 title, details, color, category, 
@@ -880,11 +925,12 @@ def show_dashboard():
                         else:
                             st.error("Title is required!")
                 
-                if st.button("Cancel", use_container_width=True):
-                    st.session_state.show_add_form = False
-                    st.rerun()
+                with col2:
+                    if st.form_submit_button("Cancel", use_container_width=True):
+                        st.session_state.show_add_form = False
+                        st.rerun()
         
-        # Quick stats row
+        # Quick stats row with Apple style
         df = get_initiatives_from_db()
         if not df.empty:
             df['Quadrant'] = df.apply(lambda row: get_quadrant(row['x'], row['y']), axis=1)
@@ -893,19 +939,19 @@ def show_dashboard():
             col1, col2, col3, col4 = st.columns(4)
             with col1:
                 quick_wins = len(df[df['Quadrant'] == 'Quick Wins'])
-                st.metric("🎯 Quick Wins", quick_wins, delta=None, delta_color="normal")
+                st.metric("Quick Wins", quick_wins)
             with col2:
                 strategic = len(df[df['Quadrant'] == 'Strategic Investments'])
-                st.metric("🚀 Strategic", strategic)
+                st.metric("Strategic", strategic)
             with col3:
                 consider = len(df[df['Quadrant'] == 'Consider Carefully'])
-                st.metric("🤔 Consider", consider)
+                st.metric("Consider", consider)
             with col4:
                 total = len(df)
-                st.metric("📊 Total", total)
+                st.metric("Total", total)
     
     with tab2:
-        # Analytics Dashboard
+        # Analytics Dashboard with Apple style
         st.markdown("### Strategic Analytics")
         
         df = get_initiatives_from_db()
@@ -916,29 +962,31 @@ def show_dashboard():
             col1, col2 = st.columns(2)
             
             with col1:
-                # Quadrant distribution
+                # Quadrant distribution - Apple colors
                 quadrant_counts = df['Quadrant'].value_counts()
                 fig_pie = px.pie(
                     values=quadrant_counts.values,
                     names=quadrant_counts.index,
                     title="Portfolio Distribution",
                     color_discrete_map={
-                        'Quick Wins': '#10b981',
-                        'Strategic Investments': '#3b82f6',
-                        'Consider Carefully': '#f59e0b',
-                        'Low Priority': '#ef4444'
+                        'Quick Wins': '#34c759',      # Apple green
+                        'Strategic Investments': '#007aff',  # Apple blue
+                        'Consider Carefully': '#ff9500',     # Apple orange
+                        'Low Priority': '#8e8e93'            # Apple gray
                     }
                 )
                 fig_pie.update_traces(textposition='inside', textinfo='percent+label')
                 fig_pie.update_layout(
                     showlegend=False,
                     height=400,
-                    font=dict(size=14)
+                    font=dict(size=14, family='-apple-system'),
+                    plot_bgcolor='white',
+                    paper_bgcolor='white'
                 )
                 st.plotly_chart(fig_pie, use_container_width=True)
             
             with col2:
-                # Category distribution
+                # Category distribution - Apple style
                 category_counts = df['category'].value_counts()
                 fig_bar = px.bar(
                     x=category_counts.values,
@@ -947,30 +995,38 @@ def show_dashboard():
                     title="Category Breakdown",
                     color=category_counts.index,
                     color_discrete_map={
-                        'Strategic/Process': '#ff69b4',
-                        'Quick Implementation': '#ffd700',
-                        'Technology/Platform': '#48c774',
-                        'People/Organization': '#3273dc'
+                        'Strategic/Process': '#ff3b30',      # Apple red
+                        'Quick Implementation': '#ffcc00',    # Apple yellow
+                        'Technology/Platform': '#34c759',     # Apple green
+                        'People/Organization': '#007aff'      # Apple blue
                     }
                 )
                 fig_bar.update_layout(
                     showlegend=False,
                     height=400,
                     xaxis_title="Count",
-                    yaxis_title=""
+                    yaxis_title="",
+                    font=dict(family='-apple-system'),
+                    plot_bgcolor='white',
+                    paper_bgcolor='white'
                 )
                 st.plotly_chart(fig_bar, use_container_width=True)
             
-            # Heatmap
+            # Heatmap with Apple style
             st.markdown("### Value/Effort Distribution")
             pivot_table = pd.crosstab(df['value'], df['effort'])
             fig_heatmap = px.imshow(
                 pivot_table,
                 labels=dict(x="Effort", y="Value", color="Count"),
-                color_continuous_scale="Viridis",
+                color_continuous_scale="Greys",  # Apple-style grayscale
                 aspect="auto"
             )
-            fig_heatmap.update_layout(height=350)
+            fig_heatmap.update_layout(
+                height=350,
+                font=dict(family='-apple-system'),
+                plot_bgcolor='white',
+                paper_bgcolor='white'
+            )
             st.plotly_chart(fig_heatmap, use_container_width=True)
     
     with tab3:
