@@ -702,7 +702,9 @@
         } catch (e) {
             // cross-origin access denied; fall back to current window
         }
-        const API_BASE = `${rootLoc.protocol}//${rootLoc.hostname}:8000`;
+        const hostname = rootLoc.hostname || 'localhost';
+        const API_BASE = `${rootLoc.protocol}//${hostname}:8000`;
+        console.log('Using API base', API_BASE);
 
         // Initiative data loaded from the shared database
         let initiatives = [];
