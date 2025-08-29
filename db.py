@@ -2,7 +2,14 @@ import sqlite3
 import pandas as pd
 import os
 
-DB_PATH = os.getenv("LUMEN_DB", "lumen_dashboard.db")
+# Always resolve the database relative to this file so multiple app
+# instances on the same machine share a single database file.  This
+# prevents each process's working directory from creating its own
+# isolated copy.
+DB_PATH = os.getenv(
+    "LUMEN_DB",
+    os.path.join(os.path.dirname(__file__), "lumen_dashboard.db"),
+)
 
 
 def init_db():
@@ -101,6 +108,46 @@ def add_initiative(title: str, details: str, color: str, category: str, x: float
     conn.close()
 
 
+def upsert_initiative(
+    initiative_id: int | None,
+    title: str,
+    details: str,
+    color: str,
+    category: str,
+    x: float,
+    y: float,
+    user: str = "user",
+) -> int:
+    """Add a new initiative or update an existing one and return its id."""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    value = "High" if y > 66 else "Medium" if y > 33 else "Low"
+    effort = "High" if x > 66 else "Medium" if x > 33 else "Low"
+    if initiative_id:
+        c.execute(
+            """
+            UPDATE initiatives
+            SET title=?, details=?, color=?, category=?, x=?, y=?,
+                value=?, effort=?, updated_at=CURRENT_TIMESTAMP, updated_by=?
+            WHERE id=?
+            """,
+            (title, details, color, category, x, y, value, effort, user, initiative_id),
+        )
+        new_id = initiative_id
+    else:
+        c.execute(
+            """
+            INSERT INTO initiatives (title, details, color, category, x, y, value, effort, created_by, updated_by)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (title, details, color, category, x, y, value, effort, user, user),
+        )
+        new_id = c.lastrowid
+    conn.commit()
+    conn.close()
+    return new_id
+
+
 def delete_initiative(initiative_id: int, user: str = "user") -> None:
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
@@ -110,3 +157,13 @@ def delete_initiative(initiative_id: int, user: str = "user") -> None:
     )
     conn.commit()
     conn.close()
+
+
+def get_last_updated() -> str | None:
+    """Return the most recent updated_at timestamp from initiatives."""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT MAX(updated_at) FROM initiatives")
+    result = c.fetchone()[0]
+    conn.close()
+    return result
