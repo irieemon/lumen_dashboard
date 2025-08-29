@@ -1,5 +1,6 @@
 import threading
 import socket
+import time
 from api import app as api_app
 
 API_PORT = 8000
@@ -24,4 +25,9 @@ def ensure_api_running() -> None:
         return
     thread = threading.Thread(target=_start_api, daemon=True)
     thread.start()
-    API_STARTED = True
+    for _ in range(50):  # wait up to ~5s for the server to start
+        if _port_in_use(API_PORT):
+            API_STARTED = True
+            return
+        time.sleep(0.1)
+
