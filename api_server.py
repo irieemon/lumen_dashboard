@@ -30,3 +30,4 @@ def ensure_api_running() -> None:
             API_STARTED = True
             return
         time.sleep(0.1)
+
