@@ -13,13 +13,12 @@
 
         html, body {
             width: 100%;
-            min-height: 100%;
+            min-height: 100vh;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
+            background: linear-gradient(135deg, #555, #ddd);
         }
         
         .container {
@@ -29,7 +28,7 @@
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             padding: 30px;
-            min-height: calc(100vh - 40px);
+            min-height: 100vh;
         }
         
         .header {
@@ -538,6 +537,7 @@
                 <button class="btn add" onclick="openAddModal()">+ Add New Sticky</button>
                 <button class="btn" onclick="savePositions()">Save All Changes</button>
                 <button class="btn reset" onclick="resetPositions()">Reset to Original</button>
+                <button class="btn" id="refreshBtn" onclick="refreshData()" disabled>Refresh</button>
             </div>
             <div>
                 <button class="btn" onclick="exportData()">Export to CSV</button>
@@ -689,55 +689,31 @@
         // Application version for cache-busting / verification
         const DASHBOARD_VERSION = '1.1.3';
 
-        // Initiative data
-        let initiatives = [
-            {id: 1, title: "Prioritize CommMgmt Strategy", details: "Establish clear communication management strategy and framework", color: "pink", category: "Strategic/Process", initialX: 10, initialY: 15},
-            {id: 2, title: "Strategic Direction", details: "Define clear strategic direction for technology investments", color: "blue", category: "People/Organization", initialX: 5, initialY: 20},
-            {id: 3, title: "Cannot 'justify' tech invest", details: "Need framework to justify and measure ROI on technology investments", color: "green", category: "Technology/Platform", initialX: 20, initialY: 10},
-            {id: 4, title: "No prioritization marketing", details: "Implement marketing prioritization framework", color: "green", category: "Technology/Platform", initialX: 15, initialY: 25},
-            {id: 5, title: "Do I have right people in roles", details: "Skills assessment and organizational alignment needed", color: "blue", category: "People/Organization", initialX: 25, initialY: 18},
-            {id: 6, title: "Back to Shots - CJA", details: "Return to basic CJA implementation", color: "yellow", category: "Quick Implementation", initialX: 8, initialY: 30},
-            {id: 7, title: "Build hurdling warehouse", details: "Create comprehensive data warehouse solution", color: "pink", category: "Strategic/Process", initialX: 45, initialY: 8},
-            {id: 8, title: "Align tools vs Campaign Member", details: "Align technology tools with campaign member needs", color: "yellow", category: "Quick Implementation", initialX: 40, initialY: 25},
-            {id: 9, title: "Marketing Activity Data", details: "Migrate marketing activity data to specific roles", color: "pink", category: "Strategic/Process", initialX: 50, initialY: 15},
-            {id: 10, title: "Campaign Orchestration", details: "No scale view of complete campaign activity - need comprehensive tracking", color: "pink", category: "Strategic/Process", initialX: 65, initialY: 10},
-            {id: 11, title: "Campaign Tracking", details: "Implement comprehensive campaign tracking system", color: "pink", category: "Strategic/Process", initialX: 70, initialY: 20},
-            {id: 12, title: "Governance Standards", details: "Governance around things: AEMI, content alignment from other tech", color: "pink", category: "Strategic/Process", initialX: 80, initialY: 15},
-            {id: 13, title: "Supposed to differentiate", details: "Supposed to differentiate on experience - foundational follow and me just sent", color: "pink", category: "Strategic/Process", initialX: 75, initialY: 25},
-            {id: 14, title: "AI/O Implementation", details: "AI/O or some sort of experience orchestration", color: "green", category: "Technology/Platform", initialX: 85, initialY: 18},
-            {id: 15, title: "Lead/Person Source", details: "Implement lead/person source data warehouse", color: "pink", category: "Strategic/Process", initialX: 68, initialY: 30},
-            {id: 16, title: "AEM Developer Team", details: "Build AEM Developer team with appropriate roles and skills", color: "pink", category: "Strategic/Process", initialX: 85, initialY: 35},
-            {id: 17, title: "Contact Remediation Process", details: "Implement contact remediation processes", color: "yellow", category: "Quick Implementation", initialX: 10, initialY: 45},
-            {id: 18, title: "Different template for journey", details: "Create different templates for voter journey campaigns", color: "green", category: "Technology/Platform", initialX: 15, initialY: 50},
-            {id: 19, title: "What-if Chat", details: "Implement what-if chat functionality", color: "green", category: "Technology/Platform", initialX: 8, initialY: 55},
-            {id: 20, title: "Scalable Email Execution", details: "Build scalable email execution framework", color: "yellow", category: "Quick Implementation", initialX: 35, initialY: 48},
-            {id: 21, title: "Missing big talent on AEM", details: "Critical talent gap in AEM expertise", color: "green", category: "Technology/Platform", initialX: 40, initialY: 53},
-            {id: 22, title: "CDP Implementation", details: "Customer Data Platform implementation - foundational need", color: "pink", category: "Strategic/Process", initialX: 45, initialY: 45},
-            {id: 23, title: "Multiple redundant items", details: "Multiple items in Tech Stack Page 26 do the same thing", color: "pink", category: "Strategic/Process", initialX: 50, initialY: 58},
-            {id: 24, title: "SDR Process", details: "SDR process and campaign tracking implementation", color: "green", category: "Technology/Platform", initialX: 70, initialY: 45},
-            {id: 25, title: "Misconception about CDP", details: "Misconception that CDP will fix all audience/segmentation issues", color: "pink", category: "Strategic/Process", initialX: 75, initialY: 50},
-            {id: 26, title: "Leverage Chat KPIs", details: "Leverage existing chat KPIs for insights", color: "yellow", category: "Quick Implementation", initialX: 12, initialY: 75},
-            {id: 27, title: "Technical Chat Platform", details: "Define technical chat platform and strategy", color: "pink", category: "Strategic/Process", initialX: 18, initialY: 80},
-            {id: 28, title: "DC to BC Admin", details: "Administrative transition requirements", color: "pink", category: "Strategic/Process", initialX: 45, initialY: 78}
-        ];
+        // Base URL for the background API (same host, fixed port)
+        // Derive the API base from the current page's origin so hosted
+        // instances and different ports all talk to the same backend.
+        const API_BASE = window.location.origin.replace(/:\d+$/, ':8000');
+
+        // Initiative data loaded from the shared database
+        let initiatives = [];
+        let lastServerUpdate = null;
         
         let currentPositions = {};
         let isDragging = false;
         let hasMoved = false;
         let currentElement = null;
         let offsetX, offsetY;
-        let nextId = 29;
+        let nextId = 1;
         let currentDetailId = null;
-        
+
         // Initialize the matrix and table
         function init() {
-            loadSavedData();
-            createStickyNotes();
-            populateTable();
+            fetchInitiatives();
             const versionEl = document.getElementById('version');
             if (versionEl) {
                 versionEl.textContent = `Version ${DASHBOARD_VERSION}`;
             }
+            setInterval(checkForUpdates, 5000);
         }
         
         function createStickyNotes() {
@@ -939,81 +915,44 @@
             document.getElementById('editModal').style.display = 'block';
         }
         
-        function saveInitiative(event) {
+        async function saveInitiative(event) {
             event.preventDefault();
-            
+
             const id = document.getElementById('initiativeId').value;
             const title = document.getElementById('initiativeTitle').value;
             const details = document.getElementById('initiativeDetails').value;
             const category = document.getElementById('initiativeCategory').value;
             const color = document.getElementById('initiativeColor').value;
-            
-            if (id) {
-                // Edit existing
-                const item = initiatives.find(i => i.id == id);
-                if (item) {
-                    item.title = title;
-                    item.details = details;
-                    item.category = category;
-                    item.color = color;
-                    
-                    // Update sticky note
-                    const note = document.getElementById(`note-${id}`);
-                    if (note) {
-                        note.querySelector('span').textContent = title;
-                        note.className = `sticky-note ${color}`;
-                        note.setAttribute('data-title', title);
-                        note.setAttribute('data-details', details);
-                    }
-                    
-                    // Update table
-                    const row = document.getElementById(`row-${id}`);
-                    if (row) {
-                        row.remove();
-                        createTableRow(item);
-                    }
-                }
-            } else {
-                // Add new
-                const newItem = {
-                    id: nextId++,
-                    title: title,
-                    details: details,
-                    category: category,
-                    color: color,
-                    initialX: 50,
-                    initialY: 50
-                };
-                
-                initiatives.push(newItem);
-                currentPositions[newItem.id] = {x: 50, y: 50};
-                
-                createStickyNote(newItem);
-                createTableRow(newItem);
+            const payload = {
+                id: id ? Number(id) : null,
+                title,
+                details,
+                category,
+                color,
+                x: id && currentPositions[id] ? currentPositions[id].x : 50,
+                y: id && currentPositions[id] ? currentPositions[id].y : 50
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/api/initiative`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok) throw new Error(`Server responded ${res.status}`);
+                closeModal('editModal');
+                await fetchInitiatives();
+            } catch (err) {
+                console.error('Failed to save initiative', err);
+                alert('Unable to save initiative. Please try again.');
             }
-            
-            closeModal('editModal');
-            saveToLocalStorage();
         }
-        
-        function deleteInitiative(id) {
+
+        async function deleteInitiative(id) {
             if (!confirm('Are you sure you want to delete this initiative?')) return;
-            
-            // Remove from array
-            initiatives = initiatives.filter(i => i.id != id);
-            
-            // Remove sticky note
-            const note = document.getElementById(`note-${id}`);
-            if (note) note.remove();
-            
-            // Remove table row
-            const row = document.getElementById(`row-${id}`);
-            if (row) row.remove();
-            
-            // Remove from positions
-            delete currentPositions[id];
-            
-            saveToLocalStorage();
+
+            await fetch(`${API_BASE}/api/initiative/${id}`, {method: 'DELETE'});
+            await fetchInitiatives();
         }
         
         function getColorHex(colorName) {
@@ -1119,36 +1058,75 @@
         function closeModal(modalId) {
             document.getElementById(modalId).style.display = 'none';
         }
-        
-        function saveToLocalStorage() {
-            const data = {
-                initiatives: initiatives,
-                positions: currentPositions,
-                nextId: nextId
-            };
-            localStorage.setItem('lumenWorkshopData', JSON.stringify(data));
-        }
-        
-        function loadSavedData() {
-            const saved = localStorage.getItem('lumenWorkshopData');
-            if (saved) {
-                const data = JSON.parse(saved);
-                if (data.initiatives) initiatives = data.initiatives;
-                if (data.positions) currentPositions = data.positions;
-                if (data.nextId) nextId = data.nextId;
+
+        async function fetchInitiatives() {
+            try {
+                const response = await fetch(`${API_BASE}/api/initiatives`);
+                const data = await response.json();
+                initiatives = data.initiatives.map(item => ({
+                    id: item.id,
+                    title: item.title,
+                    details: item.details,
+                    category: item.category,
+                    color: item.color,
+                    initialX: item.x,
+                    initialY: item.y
+                }));
+                currentPositions = {};
+                nextId = initiatives.reduce((m, i) => Math.max(m, i.id), 0) + 1;
+                lastServerUpdate = data.last_updated;
+                createStickyNotes();
+                populateTable();
+                const refresh = document.getElementById('refreshBtn');
+                if (refresh) refresh.disabled = true;
+            } catch (err) {
+                console.error('Failed to load initiatives', err);
             }
         }
-        
-        function savePositions() {
-            saveToLocalStorage();
+
+        async function savePositions() {
+            const positions = Object.entries(currentPositions).map(([id, pos]) => ({id: Number(id), x: pos.x, y: pos.y}));
+            await fetch(`${API_BASE}/api/positions`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({positions})
+            });
             alert('All changes saved successfully!');
+            await fetchLastUpdated();
         }
-        
-        function resetPositions() {
+
+        async function fetchLastUpdated() {
+            try {
+                const res = await fetch(`${API_BASE}/api/last_updated`);
+                const data = await res.json();
+                lastServerUpdate = data.last_updated;
+                const refresh = document.getElementById('refreshBtn');
+                if (refresh) refresh.disabled = true;
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function resetPositions() {
             if (!confirm('Reset all items to original positions and data? This will remove any added items.')) return;
-            
-            localStorage.removeItem('lumenWorkshopData');
-            location.reload();
+            await fetchInitiatives();
+        }
+
+        async function refreshData() {
+            await fetchInitiatives();
+        }
+
+        async function checkForUpdates() {
+            try {
+                const res = await fetch(`${API_BASE}/api/last_updated`);
+                const data = await res.json();
+                if (lastServerUpdate && data.last_updated !== lastServerUpdate) {
+                    const refresh = document.getElementById('refreshBtn');
+                    if (refresh) refresh.disabled = false;
+                }
+            } catch (e) {
+                console.error(e);
+            }
         }
         
         function exportData() {
@@ -1178,40 +1156,31 @@
             input.onchange = function(e) {
                 const file = e.target.files[0];
                 if (!file) return;
-                
+
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = async function(e) {
                     try {
-                        // Simple CSV parser - you might want to use a library for production
                         const lines = e.target.result.split('\n');
-                        const headers = lines[0].split(',');
-                        
-                        // Skip header and process data
                         for (let i = 1; i < lines.length; i++) {
                             if (!lines[i].trim()) continue;
-                            
-                            // Basic CSV parsing (doesn't handle all edge cases)
                             const values = lines[i].match(/(".*?"|[^,]+)/g).map(v => v.replace(/^"|"$/g, ''));
-                            
                             if (values.length >= 5) {
-                                const newItem = {
-                                    id: nextId++,
+                                const payload = {
                                     title: values[0],
                                     category: values[1],
                                     color: getCategoryColor(values[1]),
                                     details: values[5] || '',
-                                    initialX: 50,
-                                    initialY: 50
+                                    x: 50,
+                                    y: 50
                                 };
-                                
-                                initiatives.push(newItem);
-                                currentPositions[newItem.id] = {x: 50, y: 50};
+                                await fetch(`${API_BASE}/api/initiative`, {
+                                    method: 'POST',
+                                    headers: {'Content-Type': 'application/json'},
+                                    body: JSON.stringify(payload)
+                                });
                             }
                         }
-                        
-                        createStickyNotes();
-                        populateTable();
-                        saveToLocalStorage();
+                        await fetchInitiatives();
                         alert('Data imported successfully!');
                     } catch (error) {
                         alert('Error importing file. Please check the format.');

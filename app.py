@@ -3,6 +3,7 @@ from pathlib import Path
 
 from auth import login
 from db import init_db
+from api_server import ensure_api_running
 
 
 def main() -> None:
@@ -13,6 +14,7 @@ def main() -> None:
         layout="wide",
     )
 
+    ensure_api_running()
     init_db()
     authenticator, authenticated = login()
     if not authenticated:
@@ -24,7 +26,10 @@ def main() -> None:
             html, body {
                 margin: 0;
                 padding: 0;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                height: 100%;
+                min-height: 100vh;
+                /* Use a unified gray gradient across the app */
+                background: linear-gradient(135deg, #555, #ddd);
             }
 
             div[data-testid="stApp"] {
@@ -49,6 +54,17 @@ def main() -> None:
             header[data-testid="stHeader"] {
                 display: none;
             }
+
+            /* Fix the logout button to the bottom-left corner */
+            div.stButton > button:first-child {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                z-index: 1000;
+                margin: 0;
+                padding: 0.25rem 0.75rem;
+                font-size: 0.8rem;
+            }
         </style>
         """,
         unsafe_allow_html=True,
@@ -58,7 +74,8 @@ def main() -> None:
     with index_path.open(encoding="utf-8") as f:
         html = f.read()
 
-    st.components.v1.html(html, height=1000, scrolling=False)
+    # Provide an initial height; the embedded page will resize itself
+    st.components.v1.html(html, height=1200, scrolling=False)
 
     # Place logout button below the dashboard instead of at the top
     authenticator.logout("Logout", "main")
