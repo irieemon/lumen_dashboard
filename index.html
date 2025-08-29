@@ -690,19 +690,23 @@
         const DASHBOARD_VERSION = '1.1.3';
 
         // Base URL for the background API (same host, fixed port)
-        // When this dashboard is embedded via Streamlit components the
-        // iframe's own location is about:blank, so derive the address from
-        // the parent page when available and fall back to the current
-        // window otherwise.
-        let rootLoc = window.location;
+        // When embedded via Streamlit components the iframe's own location is
+        // about:blank and accessing window.parent.location may be blocked by
+        // cross-origin restrictions. Instead, use document.referrer which is
+        // always populated with the parent page URL.
+        let protocol = 'http:';
+        let hostname = 'localhost';
         try {
-            if (window.parent && window.parent.location && window.parent.location.protocol !== 'about:') {
-                rootLoc = window.parent.location;
+            const ref = document.referrer ? new URL(document.referrer) : null;
+            if (ref && ref.protocol !== 'about:') {
+                protocol = ref.protocol;
+                hostname = ref.hostname;
             }
         } catch (e) {
-            // cross-origin access denied; fall back to current window
+            // ignore parse errors and fall back to defaults
         }
-        const API_BASE = `${rootLoc.protocol}//${rootLoc.hostname}:8000`;
+        const API_BASE = `${protocol}//${hostname}:8000`;
+        console.log('Using API base', API_BASE);
 
         // Initiative data loaded from the shared database
         let initiatives = [];

@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import logging
 from db import (
     init_db,
     get_initiatives,
@@ -11,12 +12,16 @@ from db import (
 
 init_db()
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 app = Flask(__name__)
 CORS(app)
 
 
 @app.get("/api/initiatives")
 def api_get_initiatives():
+    logger.info("Fetching initiatives")
     df = get_initiatives()
     return jsonify({"initiatives": df.to_dict(orient="records"), "last_updated": get_last_updated()})
 
@@ -24,6 +29,7 @@ def api_get_initiatives():
 @app.post("/api/positions")
 def api_save_positions():
     data = request.get_json(force=True)
+    logger.info("Saving positions: %s", data)
     user = data.get("user", "user")
     for pos in data.get("positions", []):
         update_position(pos["id"], pos["x"], pos["y"], user)
@@ -33,6 +39,7 @@ def api_save_positions():
 @app.post("/api/initiative")
 def api_upsert_initiative():
     data = request.get_json(force=True)
+    logger.info("Upsert initiative payload: %s", data)
     new_id = upsert_initiative(
         data.get("id"),
         data.get("title"),
@@ -43,11 +50,13 @@ def api_upsert_initiative():
         data.get("y", 50),
         data.get("user", "user"),
     )
+    logger.info("Upserted initiative id %s", new_id)
     return jsonify({"id": new_id, "last_updated": get_last_updated()})
 
 
 @app.delete("/api/initiative/<int:initiative_id>")
 def api_delete_initiative(initiative_id: int):
+    logger.info("Deleting initiative %s", initiative_id)
     delete_initiative(initiative_id)
     return jsonify({"status": "ok", "last_updated": get_last_updated()})
 
