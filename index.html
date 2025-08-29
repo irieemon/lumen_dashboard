@@ -692,7 +692,8 @@
         // Base URL for the background API (same host, fixed port)
         // Derive the API base from the current page's origin so hosted
         // instances and different ports all talk to the same backend.
-        const API_BASE = window.location.origin.replace(/:\d+$/, ':8000');
+
+          const API_BASE = `${window.location.protocol}//${window.location.hostname}:8000`;
 
         // Initiative data loaded from the shared database
         let initiatives = [];
@@ -939,12 +940,15 @@
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(payload)
                 });
-                if (!res.ok) throw new Error(`Server responded ${res.status}`);
+                if (!res.ok) {
+                    const msg = await res.text();
+                    throw new Error(`Server responded ${res.status}: ${msg}`);
+                }
                 closeModal('editModal');
                 await fetchInitiatives();
             } catch (err) {
                 console.error('Failed to save initiative', err);
-                alert('Unable to save initiative. Please try again.');
+                alert(err.message || 'Unable to save initiative. Please try again.');
             }
         }
 
