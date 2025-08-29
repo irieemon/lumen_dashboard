@@ -2,7 +2,14 @@ import sqlite3
 import pandas as pd
 import os
 
-DB_PATH = os.getenv("LUMEN_DB", "lumen_dashboard.db")
+# Always resolve the database relative to this file so multiple app
+# instances on the same machine share a single database file.  This
+# prevents each process's working directory from creating its own
+# isolated copy.
+DB_PATH = os.getenv(
+    "LUMEN_DB",
+    os.path.join(os.path.dirname(__file__), "lumen_dashboard.db"),
+)
 
 
 def init_db():

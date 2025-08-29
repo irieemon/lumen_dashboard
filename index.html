@@ -690,7 +690,9 @@
         const DASHBOARD_VERSION = '1.1.3';
 
         // Base URL for the background API (same host, fixed port)
-        const API_BASE = `${window.location.protocol}//${window.location.hostname}:8000`;
+        // Derive the API base from the current page's origin so hosted
+        // instances and different ports all talk to the same backend.
+        const API_BASE = window.location.origin.replace(/:\d+$/, ':8000');
 
         // Initiative data loaded from the shared database
         let initiatives = [];
@@ -931,14 +933,19 @@
                 y: id && currentPositions[id] ? currentPositions[id].y : 50
             };
 
-            await fetch(`${API_BASE}/api/initiative`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(payload)
-            });
-
-            closeModal('editModal');
-            await fetchInitiatives();
+            try {
+                const res = await fetch(`${API_BASE}/api/initiative`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok) throw new Error(`Server responded ${res.status}`);
+                closeModal('editModal');
+                await fetchInitiatives();
+            } catch (err) {
+                console.error('Failed to save initiative', err);
+                alert('Unable to save initiative. Please try again.');
+            }
         }
 
         async function deleteInitiative(id) {
