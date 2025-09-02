@@ -104,29 +104,34 @@ def create_draggable_matrix(username: str) -> None:
     layout = st.session_state.get("layout", [])
 
     with elements("board"):
-        layout = dashboard.Grid(
+        # ``dashboard.Grid`` acts as a context manager. The previous implementation
+        # instantiated it without entering the context, which resulted in an empty
+        # white canvas being rendered on Streamlit Cloud. By using ``with`` the
+        # grid properly wraps each sticky note allowing them to display and drag.
+        with dashboard.Grid(
             layout,
             onLayoutChange=sync("layout"),
             cols=100,
             rowHeight=5,
             isDraggable=True,
             isResizable=False,
-        )
-        for row in df.itertuples():
-            with html.div(
-                key=str(row.id),
-                style={
-                    "backgroundColor": row.color or "#FFFB7D",
-                    "padding": "8px",
-                    "border": "1px solid #e0e0e0",
-                    "borderRadius": "4px",
-                    "boxShadow": "0 2px 4px rgba(0,0,0,0.2)",
-                    "cursor": "move",
-                    "userSelect": "none",
-                },
-                onDoubleClick=sync("edit", row.id),
-            ):
-                mui.Typography(row.title, variant="body2")
+        ):
+            for row in df.itertuples():
+                with html.div(
+                    key=str(row.id),
+                    style={
+                        "backgroundColor": row.color or "#FFFB7D",
+                        "padding": "8px",
+                        "border": "1px solid #e0e0e0",
+                        "borderRadius": "4px",
+                        "boxShadow": "0 2px 4px rgba(0,0,0,0.2)",
+                        "cursor": "move",
+                        "userSelect": "none",
+                    },
+                    onDoubleClick=sync("edit", row.id),
+                ):
+                    mui.Typography(row.title, variant="body2")
+
 
     if "layout" in st.session_state:
         layout_json = json.dumps(st.session_state["layout"])
