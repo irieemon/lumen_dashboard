@@ -8,7 +8,13 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.append(str(ROOT))
 
-from db import init_db, upsert_initiative, get_initiatives
+from db import (
+    init_db,
+    upsert_initiative,
+    get_initiatives,
+    update_position,
+    get_initiative,
+)
 
 
 def _prepare_db(tmp_path, monkeypatch):
@@ -33,3 +39,14 @@ def test_value_effort_low_medium(tmp_path, monkeypatch):
     row = df[df["id"] == new_id].iloc[0]
     assert row["value"] == "Low"
     assert row["effort"] == "Medium"
+    
+
+def test_get_initiative_and_move(tmp_path, monkeypatch):
+    _prepare_db(tmp_path, monkeypatch)
+    new_id = upsert_initiative(None, "MoveMe", "", "yellow", "", 10, 10, "tester")
+    update_position(new_id, 20, 30, "tester")
+    row = get_initiative(new_id)
+    assert row is not None
+    assert row["x"] == 20
+    assert row["y"] == 30
+

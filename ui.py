@@ -1,8 +1,9 @@
 import streamlit as st
-import plotly.express as px
+import json
 
-from db import get_initiatives
+from streamlit_elements import elements, dashboard, html, mui, sync
 
+from db import get_initiatives, update_position, get_last_updated
 
 def load_css() -> None:
     """Inject CSS to mimic the original HTML dashboard styling."""
@@ -33,7 +34,6 @@ def load_css() -> None:
         div[data-testid="stApp"] {
             background: transparent;
         }
-
 
         div[data-testid="stAppViewContainer"] {
             padding: 0;
@@ -87,34 +87,55 @@ def load_css() -> None:
 
 
 def create_draggable_matrix(username: str) -> None:
-    """Display initiatives on a simple value/effort scatter plot."""
+    """Render initiatives as draggable "post-it" notes."""
     df = get_initiatives()
     if df.empty:
         st.info("No initiatives added yet.")
         return
 
-    fig = px.scatter(
-        df,
-        x="x",
-        y="y",
-        color="color",
-        text="title",
-        hover_data={"details": True, "category": True},
-        labels={"x": "Effort", "y": "Value"},
-        range_x=[0, 100],
-        range_y=[0, 100],
-    )
-    fig.update_traces(textposition="top center")
-    fig.update_layout(
-        yaxis=dict(scaleanchor="x", scaleratio=1, showgrid=False, zeroline=False),
-        xaxis=dict(showgrid=False, zeroline=False),
-        plot_bgcolor="#f8f9fa",
-        paper_bgcolor="rgba(0,0,0,0)",
-        font=dict(family="Inter"),
-        margin=dict(l=40, r=40, t=40, b=40),
-    )
-    fig.add_hline(y=33, line_dash="dash", line_color="gray")
-    fig.add_hline(y=66, line_dash="dash", line_color="gray")
-    fig.add_vline(x=33, line_dash="dash", line_color="gray")
-    fig.add_vline(x=66, line_dash="dash", line_color="gray")
-    st.plotly_chart(fig, use_container_width=True)
+    last_updated = get_last_updated()
+    if "layout" not in st.session_state or st.session_state.get("layout_ts") != last_updated:
+        st.session_state["layout"] = [
+            dashboard.Item(str(row.id), x=int(row.x), y=int(row.y), w=10, h=6)
+            for row in df.itertuples()
+        ]
+        st.session_state["layout_ts"] = last_updated
+
+    layout = st.session_state.get("layout", [])
+
+    with elements("board"):
+        layout = dashboard.Grid(
+            layout,
+            onLayoutChange=sync("layout"),
+            cols=100,
+            rowHeight=5,
+            isDraggable=True,
+            isResizable=False,
+        )
+        for row in df.itertuples():
+            with html.div(
+                key=str(row.id),
+                style={
+                    "backgroundColor": row.color or "#FFFB7D",
+                    "padding": "8px",
+                    "border": "1px solid #e0e0e0",
+                    "borderRadius": "4px",
+                    "boxShadow": "0 2px 4px rgba(0,0,0,0.2)",
+                    "cursor": "move",
+                    "userSelect": "none",
+                },
+                onDoubleClick=sync("edit", row.id),
+            ):
+                mui.Typography(row.title, variant="body2")
+
+    if "layout" in st.session_state:
+        layout_json = json.dumps(st.session_state["layout"])
+        if layout_json != st.session_state.get("_layout_snapshot"):
+            st.session_state["_layout_snapshot"] = layout_json
+            for item in st.session_state["layout"]:
+                update_position(int(item["i"]), float(item["x"]), float(item["y"]), username)
+
+    if "edit" in st.session_state:
+        st.session_state["edit_initiative_id"] = st.session_state.pop("edit")
+        st.rerun()
+

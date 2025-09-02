@@ -98,6 +98,20 @@ def get_initiatives() -> pd.DataFrame:
     return df
 
 
+def get_initiative(initiative_id: int) -> dict | None:
+    """Return a single initiative as a dict or ``None`` if missing."""
+    with _connect() as conn:
+        df = pd.read_sql_query(
+            """
+            SELECT id, title, details, color, category, x, y
+            FROM initiatives WHERE id=? AND is_deleted=0
+            """,
+            conn,
+            params=(initiative_id,),
+        )
+    return df.iloc[0].to_dict() if not df.empty else None
+
+
 def update_position(initiative_id: int, x: float, y: float, user: str = "user") -> None:
     value, effort = _value_effort(x, y)
     with _connect() as conn:
