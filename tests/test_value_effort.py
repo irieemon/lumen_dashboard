@@ -40,7 +40,6 @@ def test_value_effort_low_medium(tmp_path, monkeypatch):
     assert row["value"] == "Low"
     assert row["effort"] == "Medium"
 
-
 def test_get_initiative_and_move(tmp_path, monkeypatch):
     _prepare_db(tmp_path, monkeypatch)
     new_id = upsert_initiative(None, "MoveMe", "", "yellow", "", 10, 10, "tester")

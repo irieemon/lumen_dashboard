@@ -24,7 +24,6 @@ def main() -> None:
     authenticator, authenticated = login()
     if not authenticated:
         st.stop()
-
     load_css()
     st.markdown("<div class='app-container'>", unsafe_allow_html=True)
     st.title("Lumen Strategic Dashboard")
