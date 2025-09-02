@@ -1,5 +1,6 @@
 import streamlit as st
 import json
+import pandas as pd
 
 from streamlit_elements import elements, dashboard, html, mui, sync
 from streamlit_elements.core.callback import ElementsCallback
@@ -18,38 +19,6 @@ def load_css() -> None:
             padding: 0;
             height: 100%;
             min-height: 100vh;
-            background: linear-gradient(135deg, #555, #ddd);
-        }
-
-        /* Container mimicking the original centered white card */
-        .app-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            padding: 30px;
-            min-height: 100vh;
-        }
-
-        div[data-testid="stApp"] {
-            background: transparent;
-        }
-
-        div[data-testid="stAppViewContainer"] {
-            padding: 0;
-            background: transparent;
-        }
-
-        div[data-testid="stAppViewContainer"] > .main {
-            padding: 0;
-            background: transparent;
-        }
-
-        div[data-testid="stAppViewContainer"] > .main .block-container {
-            padding: 0;
-            margin: 0;
-            background: transparent;
         }
 
         header[data-testid="stHeader"] {
@@ -91,8 +60,14 @@ def create_draggable_matrix(username: str) -> None:
     """Render initiatives as draggable "post-it" notes."""
     df = get_initiatives()
     if df.empty:
-        st.info("No initiatives added yet.")
-        return
+        st.info("No initiatives added yet. Use the form to add one.")
+        df = pd.DataFrame(
+            [
+                {"id": -1, "title": "Example Initiative 1", "color": "#FFFB7D", "x": 25, "y": 75},
+                {"id": -2, "title": "Example Initiative 2", "color": "#7DFBFF", "x": 50, "y": 50},
+                {"id": -3, "title": "Example Initiative 3", "color": "#B3FF7D", "x": 75, "y": 25},
+            ]
+        )
 
     last_updated = get_last_updated()
     if "layout" not in st.session_state or st.session_state.get("layout_ts") != last_updated:
@@ -105,46 +80,111 @@ def create_draggable_matrix(username: str) -> None:
     layout = st.session_state.get("layout", [])
 
     with elements("board"):
-        # ``dashboard.Grid`` acts as a context manager. The previous implementation
-        # instantiated it without entering the context, which resulted in an empty
-        # white canvas being rendered on Streamlit Cloud. By using ``with`` the
-        # grid properly wraps each sticky note allowing them to display and drag.
-        with dashboard.Grid(
-            layout,
-            onLayoutChange=sync("layout"),
-            cols=100,
-            rowHeight=5,
-            isDraggable=True,
-            isResizable=False,
-            style={"width": "100%", "minHeight": 500},
-        ):
-            for row in df.itertuples():
-                edit_callback = ElementsCallback(
-                    lambda r_id=row.id: st.session_state.update(edit=r_id)
-                )
-                with html.div(
-                    key=str(row.id),
+        grid_style = {
+            "position": "relative",
+            "width": "100%",
+            "height": "80vh",
+            "backgroundColor": "#fff",
+            "border": "1px solid #e0e0e0",
+            "overflow": "visible",
+        }
+        with html.div(style=grid_style):
+            # draw vertical and horizontal lines at 1/3 and 2/3 to form 3x3 grid
+            for pos in ["33.33%", "66.66%"]:
+                # horizontal lines
+                html.div(
                     style={
-                        "backgroundColor": row.color or "#FFFB7D",
+                        "position": "absolute",
+                        "top": pos,
+                        "left": 0,
                         "width": "100%",
+                        "height": "1px",
+                        "backgroundColor": "#d0d0d0",
+                        "zIndex": 0,
+                    }
+                )
+                # vertical lines
+                html.div(
+                    style={
+                        "position": "absolute",
+                        "left": pos,
+                        "top": 0,
+                        "width": "1px",
                         "height": "100%",
-                        "padding": "8px",
-                        "border": "1px solid #e0e0e0",
-                        "borderRadius": "4px",
-                        "boxShadow": "0 2px 4px rgba(0,0,0,0.2)",
-                        "cursor": "move",
-                        "userSelect": "none",
-                    },
-                    onDoubleClick=edit_callback,
-                ):
-                    mui.Typography(row.title, variant="body2")
+                        "backgroundColor": "#d0d0d0",
+                        "zIndex": 0,
+                    }
+                )
+
+            with dashboard.Grid(
+                layout,
+                onLayoutChange=sync("layout"),
+                cols=100,
+                rowHeight=8,
+                isDraggable=True,
+                isResizable=False,
+                style={
+                    "position": "absolute",
+                    "top": 0,
+                    "left": 0,
+                    "right": 0,
+                    "bottom": 0,
+                    "zIndex": 1,
+                    "background": "transparent",
+                },
+            ):
+                for row in df.itertuples():
+                    edit_callback = ElementsCallback(lambda r_id=row.id: st.session_state.update(edit=r_id))
+                    with html.div(
+                        key=str(row.id),
+                        style={
+                            "backgroundColor": row.color or "#FFFB7D",
+                            "width": "100%",
+                            "height": "100%",
+                            "padding": "8px",
+                            "border": "1px solid #e0e0e0",
+                            "borderRadius": "4px",
+                            "boxShadow": "0 2px 4px rgba(0,0,0,0.2)",
+                            "cursor": "move",
+                            "userSelect": "none",
+                        },
+                        onDoubleClick=edit_callback,
+                    ):
+                        mui.Typography(row.title, variant="body2")
+
+            html.div(
+                "Effort",
+                style={
+                    "position": "absolute",
+                    "bottom": "-30px",
+                    "left": "50%",
+                    "transform": "translateX(-50%)",
+                    "fontWeight": "bold",
+                    "pointerEvents": "none",
+                    "zIndex": 2,
+                },
+            )
+            html.div(
+                "Value",
+                style={
+                    "position": "absolute",
+                    "top": "50%",
+                    "left": "-40px",
+                    "transform": "translateY(-50%) rotate(-90deg)",
+                    "fontWeight": "bold",
+                    "pointerEvents": "none",
+                    "zIndex": 2,
+                },
+            )
 
     if "layout" in st.session_state:
         layout_json = json.dumps(st.session_state["layout"])
         if layout_json != st.session_state.get("_layout_snapshot"):
             st.session_state["_layout_snapshot"] = layout_json
             for item in st.session_state["layout"]:
-                update_position(int(item["i"]), float(item["x"]), float(item["y"]), username)
+                item_id = int(item["i"])
+                if item_id > 0:
+                    update_position(item_id, float(item["x"]), float(item["y"]), username)
 
     if "edit" in st.session_state:
         st.session_state["edit_initiative_id"] = int(st.session_state.pop("edit"))
