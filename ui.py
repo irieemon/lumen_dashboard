@@ -91,7 +91,7 @@ def create_draggable_matrix(username: str) -> None:
             "position": "relative",
             "width": "100%",
             "height": "80vh",
-            "backgroundColor": "#fff",
+            "backgroundColor": "#fafafa",
             "border": "1px solid #e0e0e0",
             "overflow": "visible",
         }
@@ -105,8 +105,8 @@ def create_draggable_matrix(username: str) -> None:
                         "top": pos,
                         "left": 0,
                         "width": "100%",
-                        "height": "1px",
-                        "backgroundColor": "#d0d0d0",
+                        "height": "2px",
+                        "backgroundColor": "#666666",
                         "zIndex": 0,
                     }
                 )
@@ -116,9 +116,9 @@ def create_draggable_matrix(username: str) -> None:
                         "position": "absolute",
                         "left": pos,
                         "top": 0,
-                        "width": "1px",
+                        "width": "2px",
                         "height": "100%",
-                        "backgroundColor": "#d0d0d0",
+                        "backgroundColor": "#666666",
                         "zIndex": 0,
                     }
                 )
@@ -138,7 +138,6 @@ def create_draggable_matrix(username: str) -> None:
                     "bottom": 0,
                     "zIndex": 1,
                     "background": "transparent",
-
                 },
             ):
                 for row in df.itertuples():
