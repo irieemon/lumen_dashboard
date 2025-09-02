@@ -98,6 +98,7 @@ def create_draggable_matrix(username: str) -> None:
                 "overflow": "visible",
             }
         ):
+
             with dashboard.Grid(
                 layout,
                 onLayoutChange=sync("layout"),
