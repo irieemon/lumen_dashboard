@@ -80,60 +80,24 @@ def create_draggable_matrix(username: str) -> None:
     layout = st.session_state.get("layout", [])
 
     with elements("board"):
-        with html.div(
-            style={
-                "position": "relative",
-                "width": "100%",
-                "height": "80vh",
-                "background": "#f9fafb",
-                "overflow": "visible",
-            }
-        ):
-            html.div(
-                style={
-                    "position": "absolute",
-                    "left": "33.33%",
-                    "top": 0,
-                    "bottom": 0,
-                    "width": "2px",
-                    "background": "#d0d0d0",
-                    "zIndex": 0,
-                }
-            )
-            html.div(
-                style={
-                    "position": "absolute",
-                    "left": "66.66%",
-                    "top": 0,
-                    "bottom": 0,
-                    "width": "2px",
-                    "background": "#d0d0d0",
-                    "zIndex": 0,
-                }
-            )
-            html.div(
-                style={
-                    "position": "absolute",
-                    "top": "33.33%",
-                    "left": 0,
-                    "right": 0,
-                    "height": "2px",
-                    "background": "#d0d0d0",
-                    "zIndex": 0,
-                }
-            )
-            html.div(
-                style={
-                    "position": "absolute",
-                    "top": "66.66%",
-                    "left": 0,
-                    "right": 0,
-                    "height": "2px",
-                    "background": "#d0d0d0",
-                    "zIndex": 0,
-                }
-            )
-
+        grid_style = {
+            "position": "relative",
+            "width": "100%",
+            "height": "80vh",
+            "backgroundColor": "#fff",
+            "backgroundImage": (
+                "linear-gradient(#d0d0d0 0 0), "
+                "linear-gradient(#d0d0d0 0 0), "
+                "linear-gradient(90deg, #d0d0d0 0 0), "
+                "linear-gradient(90deg, #d0d0d0 0 0)"
+            ),
+            "backgroundSize": "100% 2px, 100% 2px, 2px 100%, 2px 100%",
+            "backgroundPosition": "0 33.33%, 0 66.66%, 33.33% 0, 66.66% 0",
+            "backgroundRepeat": "no-repeat",
+            "border": "1px solid #e0e0e0",
+            "overflow": "visible",
+        }
+        with html.div(style=grid_style):
             with dashboard.Grid(
                 layout,
                 onLayoutChange=sync("layout"),
