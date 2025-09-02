@@ -85,7 +85,6 @@ def create_draggable_matrix(username: str) -> None:
     layout = st.session_state.get("layout", [])
 
     with elements("board"):
-
         board_style = {
             "position": "relative",
             "width": "100%",
