@@ -21,26 +21,6 @@ def load_css() -> None:
             min-height: 100vh;
         }
 
-        div[data-testid="stApp"] {
-            background: transparent;
-        }
-
-        div[data-testid="stAppViewContainer"] {
-            padding: 0;
-            background: transparent;
-        }
-
-        div[data-testid="stAppViewContainer"] > .main {
-            padding: 0;
-            background: transparent;
-        }
-
-        div[data-testid="stAppViewContainer"] > .main .block-container {
-            padding: 0;
-            margin: 0;
-            background: transparent;
-        }
-
         header[data-testid="stHeader"] {
             display: none;
         }
@@ -80,16 +60,7 @@ def create_draggable_matrix(username: str) -> None:
     """Render initiatives as draggable "post-it" notes."""
     df = get_initiatives()
     if df.empty:
-        st.info("No initiatives added yet. Showing sample initiatives.")
-        df = pd.DataFrame(
-            [
-                {"id": -1, "title": "Sample Initiative 1", "color": "#FFFB7D", "x": 20, "y": 80},
-                {"id": -2, "title": "Sample Initiative 2", "color": "#FFD6A5", "x": 50, "y": 50},
-                {"id": -3, "title": "Sample Initiative 3", "color": "#CBF3F0", "x": 80, "y": 20},
-            ]
-        )
-
-
+        st.info("No initiatives added yet. Use the form to add one.")
     last_updated = get_last_updated()
     if "layout" not in st.session_state or st.session_state.get("layout_ts") != last_updated:
         st.session_state["layout"] = [
@@ -101,39 +72,102 @@ def create_draggable_matrix(username: str) -> None:
     layout = st.session_state.get("layout", [])
 
     with elements("board"):
-        # ``dashboard.Grid`` acts as a context manager. The previous implementation
-        # instantiated it without entering the context, which resulted in an empty
-        # white canvas being rendered on Streamlit Cloud. By using ``with`` the
-        # grid properly wraps each sticky note allowing them to display and drag.
-        with dashboard.Grid(
-            layout,
-            onLayoutChange=sync("layout"),
-            cols=100,
-            rowHeight=5,
-            isDraggable=True,
-            isResizable=False,
-            style={"width": "100%", "minHeight": 500},
+        with html.div(
+            style={
+                "position": "relative",
+                "width": "100%",
+                "height": "80vh",
+                "background": "#f9fafb",
+                "overflow": "visible",
+            }
         ):
-            for row in df.itertuples():
-                edit_callback = ElementsCallback(
-                    lambda r_id=row.id: st.session_state.update(edit=r_id)
-                )
-                with html.div(
-                    key=str(row.id),
+            for pct in [33, 66]:
+                html.div(
                     style={
-                        "backgroundColor": row.color or "#FFFB7D",
+                        "position": "absolute",
+                        "top": f"{pct}%",
+                        "left": "0",
                         "width": "100%",
+                        "height": "1px",
+                        "background": "#d0d0d0",
+                        "zIndex": 0,
+                        "pointerEvents": "none",
+                    }
+                )
+                html.div(
+                    style={
+                        "position": "absolute",
+                        "left": f"{pct}%",
+                        "top": "0",
+                        "width": "1px",
                         "height": "100%",
-                        "padding": "8px",
-                        "border": "1px solid #e0e0e0",
-                        "borderRadius": "4px",
-                        "boxShadow": "0 2px 4px rgba(0,0,0,0.2)",
-                        "cursor": "move",
-                        "userSelect": "none",
-                    },
-                    onDoubleClick=edit_callback,
-                ):
-                    mui.Typography(row.title, variant="body2")
+                        "background": "#d0d0d0",
+                        "zIndex": 0,
+                        "pointerEvents": "none",
+                    }
+                )
+
+            with dashboard.Grid(
+                layout,
+                onLayoutChange=sync("layout"),
+                cols=100,
+                rowHeight=5,
+                isDraggable=True,
+                isResizable=False,
+                style={
+                    "position": "absolute",
+                    "top": 0,
+                    "left": 0,
+                    "right": 0,
+                    "bottom": 0,
+                    "zIndex": 1,
+                },
+            ):
+                for row in df.itertuples():
+                    edit_callback = ElementsCallback(
+                        lambda r_id=row.id: st.session_state.update(edit=r_id)
+                    )
+                    with html.div(
+                        key=str(row.id),
+                        style={
+                            "backgroundColor": row.color or "#FFFB7D",
+                            "width": "100%",
+                            "height": "100%",
+                            "padding": "8px",
+                            "border": "1px solid #e0e0e0",
+                            "borderRadius": "4px",
+                            "boxShadow": "0 2px 4px rgba(0,0,0,0.2)",
+                            "cursor": "move",
+                            "userSelect": "none",
+                        },
+                        onDoubleClick=edit_callback,
+                    ):
+                        mui.Typography(row.title, variant="body2")
+
+            html.div(
+                "Effort",
+                style={
+                    "position": "absolute",
+                    "bottom": "-30px",
+                    "left": "50%",
+                    "transform": "translateX(-50%)",
+                    "fontWeight": "bold",
+                    "pointerEvents": "none",
+                    "zIndex": 2,
+                },
+            )
+            html.div(
+                "Value",
+                style={
+                    "position": "absolute",
+                    "top": "50%",
+                    "left": "-30px",
+                    "transform": "translateY(-50%) rotate(-90deg)",
+                    "fontWeight": "bold",
+                    "pointerEvents": "none",
+                    "zIndex": 2,
+                },
+            )
 
     if "layout" in st.session_state:
         layout_json = json.dumps(st.session_state["layout"])
