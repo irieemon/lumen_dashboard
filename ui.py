@@ -92,13 +92,10 @@ def create_draggable_matrix(username: str) -> None:
             # Light red so the outer container is obvious.
             "backgroundColor": "rgba(255, 0, 0, 0.1)",
             # Draw vertical and horizontal lines at one-third and two-thirds.
-            "backgroundImage": (
-                "linear-gradient(to right, #666 2px, transparent 2px),"
-                "linear-gradient(to right, #666 2px, transparent 2px),"
-                "linear-gradient(to bottom, #666 2px, transparent 2px),"
-                "linear-gradient(to bottom, #666 2px, transparent 2px)"
-            ),
-            "backgroundSize": "1px 100%, 1px 100%, 100% 1px, 100% 1px",
+            # React expects a single comma-separated string for multiple background images; the previous tuple was ignored.
+            "backgroundImage": "linear-gradient(to right, #666 2px, transparent 2px), linear-gradient(to right, #666 2px, transparent 2px), linear-gradient(to bottom, #666 2px, transparent 2px), linear-gradient(to bottom, #666 2px, transparent 2px)",
+            # Give each line a 2px thickness.
+            "backgroundSize": "2px 100%, 2px 100%, 100% 2px, 100% 2px",
             "backgroundPosition": "33.33% 0, 66.66% 0, 0 33.33%, 0 66.66%",
             "backgroundRepeat": "no-repeat",
             "border": "1px solid #e0e0e0",
@@ -118,8 +115,8 @@ def create_draggable_matrix(username: str) -> None:
                     "left": 0,
                     "right": 0,
                     "bottom": 0,
-                    # Light green to reveal the react-grid-layout container.
-                    "backgroundColor": "rgba(0, 255, 0, 0.1)",
+                    # Transparent so the board's grid remains visible.
+                    "backgroundColor": "transparent",
                     "zIndex": 1,
                 },
             ):
