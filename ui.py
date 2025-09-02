@@ -133,6 +133,7 @@ def create_draggable_matrix(username: str) -> None:
                     "zIndex": 0,
                 }
             )
+
             with dashboard.Grid(
                 layout,
                 onLayoutChange=sync("layout"),
