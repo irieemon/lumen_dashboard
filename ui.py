@@ -8,24 +8,21 @@ from streamlit_elements.core.callback import ElementsCallback
 from db import get_initiatives, update_position, get_last_updated
 
 def load_css() -> None:
-    """Inject CSS to mimic the original HTML dashboard styling."""
+    """Inject base CSS for fonts and sidebar controls.
+
+    The dashboard previously wrapped the page in a custom container with an
+    explicit white background. That wrapper has been removed so the app uses the
+    default Streamlit styling. Only minimal rules are kept here to match the
+    project typography and button colours.
+    """
+
     st.markdown(
         """
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-        html, body {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            min-height: 100vh;
-        }
+        header[data-testid="stHeader"] { display: none; }
 
-        header[data-testid="stHeader"] {
-            display: none;
-        }
-
-        /* Sidebar styling to match previous control panel look */
         div[data-testid="stSidebar"] {
             background: #f8f9fa;
             padding: 20px 10px;
@@ -64,13 +61,11 @@ def load_css() -> None:
 
 
 def create_draggable_matrix(username: str) -> None:
-    """Render initiatives as draggable "post-it" notes."""
+    """Render initiatives as draggable notes over a visible 3×3 grid."""
+
     df = get_initiatives()
     if df.empty:
-        # When no real initiatives exist, populate a few in-memory examples so
-        # the grid renders with content for visual verification. Avoid emitting
-        # a Streamlit info box because it briefly displays as a gray bar under
-        # the version caption and disappears once the grid mounts.
+        # Show a few example items so the board always has content.
         df = pd.DataFrame(
             [
                 {"id": -1, "title": "Example Initiative 1", "color": "#FFFB7D", "x": 25, "y": 75},
@@ -90,15 +85,25 @@ def create_draggable_matrix(username: str) -> None:
     layout = st.session_state.get("layout", [])
 
     with elements("board"):
-        grid_style = {
+        board_style = {
             "position": "relative",
             "width": "100%",
             "height": "80vh",
             "backgroundColor": "#fafafa",
+            # Draw vertical and horizontal lines at one-third and two-thirds.
+            "backgroundImage": (
+                "linear-gradient(to right, #666 2px, transparent 2px),"
+                "linear-gradient(to right, #666 2px, transparent 2px),"
+                "linear-gradient(to bottom, #666 2px, transparent 2px),"
+                "linear-gradient(to bottom, #666 2px, transparent 2px)"
+            ),
+            "backgroundSize": "1px 100%, 1px 100%, 100% 1px, 100% 1px",
+            "backgroundPosition": "33.33% 0, 66.66% 0, 0 33.33%, 0 66.66%",
+            "backgroundRepeat": "no-repeat",
             "border": "1px solid #e0e0e0",
-            "overflow": "visible",
+            "overflow": "hidden",
         }
-        with html.div(style=grid_style):
+        with html.div(style=board_style):
             with dashboard.Grid(
                 layout,
                 onLayoutChange=sync("layout"),
@@ -112,12 +117,14 @@ def create_draggable_matrix(username: str) -> None:
                     "left": 0,
                     "right": 0,
                     "bottom": 0,
+                    "background": "transparent",
                     "zIndex": 1,
-                    "backgroundColor": "transparent",
                 },
             ):
                 for row in df.itertuples():
-                    edit_callback = ElementsCallback(lambda r_id=row.id: st.session_state.update(edit=r_id))
+                    edit_callback = ElementsCallback(
+                        lambda r_id=row.id: st.session_state.update(edit=r_id)
+                    )
                     with html.div(
                         key=str(row.id),
                         style={
@@ -134,38 +141,7 @@ def create_draggable_matrix(username: str) -> None:
                         onDoubleClick=edit_callback,
                     ):
                         mui.Typography(row.title, variant="body2")
-            with html.div(
-                style={
-                    "position": "absolute",
-                    "top": 0,
-                    "left": 0,
-                    "right": 0,
-                    "bottom": 0,
-                    "pointerEvents": "none",
-                    "zIndex": 2,
-                }
-            ):
-                for pos in ["33.33%", "66.66%"]:
-                    html.div(
-                        style={
-                            "position": "absolute",
-                            "top": pos,
-                            "left": 0,
-                            "width": "100%",
-                            "height": "2px",
-                            "backgroundColor": "#666666",
-                        }
-                    )
-                    html.div(
-                        style={
-                            "position": "absolute",
-                            "left": pos,
-                            "top": 0,
-                            "width": "2px",
-                            "height": "100%",
-                            "backgroundColor": "#666666",
-                        }
-                    )
+
 
             html.div(
                 "Effort",
@@ -176,7 +152,6 @@ def create_draggable_matrix(username: str) -> None:
                     "transform": "translateX(-50%)",
                     "fontWeight": "bold",
                     "pointerEvents": "none",
-                    "zIndex": 3,
                 },
             )
             html.div(
@@ -188,7 +163,7 @@ def create_draggable_matrix(username: str) -> None:
                     "transform": "translateY(-50%) rotate(-90deg)",
                     "fontWeight": "bold",
                     "pointerEvents": "none",
-                    "zIndex": 3,
+
                 },
             )
 
