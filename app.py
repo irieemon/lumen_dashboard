@@ -1,8 +1,28 @@
 import streamlit as st
+import subprocess
 
 from auth import login
 from db import get_initiative, init_db, upsert_initiative
 from ui import load_css, create_draggable_matrix
+
+
+def _get_version() -> str:
+    """Return short version information from git.
+
+    Uses the commit count combined with the short hash so the value
+    automatically changes with every commit. Falls back to ``"dev"`` if
+    git is unavailable so the page always renders.
+    """
+    try:
+        count = subprocess.check_output(
+            ["git", "rev-list", "--count", "HEAD"], text=True
+        ).strip()
+        short = subprocess.check_output(
+            ["git", "rev-parse", "--short", "HEAD"], text=True
+        ).strip()
+        return f"{count}-{short}"
+    except Exception:
+        return "dev"
 
 
 def main() -> None:
@@ -25,8 +45,8 @@ def main() -> None:
     if not authenticated:
         st.stop()
     load_css()
-    st.markdown("<div class='app-container'>", unsafe_allow_html=True)
     st.title("Lumen Strategic Dashboard")
+    st.caption(f"Version: {_get_version()}")
 
     with st.sidebar:
         st.header("Add / Update Initiative")
@@ -83,7 +103,6 @@ def main() -> None:
         authenticator.logout("Logout", "sidebar")
 
     create_draggable_matrix(st.session_state.get("username", "user"))
-    st.markdown("</div>", unsafe_allow_html=True)
 
 
 if __name__ == "__main__":
