@@ -48,4 +48,3 @@ def test_get_initiative_and_move(tmp_path, monkeypatch):
     assert row is not None
     assert row["x"] == 20
     assert row["y"] == 30
-

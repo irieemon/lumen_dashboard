@@ -2,6 +2,7 @@ import streamlit as st
 import json
 
 from streamlit_elements import elements, dashboard, html, mui, sync
+from streamlit_elements.core.callback import ElementsCallback
 
 from db import get_initiatives, update_position, get_last_updated
 
@@ -117,6 +118,9 @@ def create_draggable_matrix(username: str) -> None:
             isResizable=False,
         ):
             for row in df.itertuples():
+                edit_callback = ElementsCallback(
+                    lambda r_id=row.id: st.session_state.update(edit=r_id)
+                )
                 with html.div(
                     key=str(row.id),
                     style={
@@ -128,10 +132,9 @@ def create_draggable_matrix(username: str) -> None:
                         "cursor": "move",
                         "userSelect": "none",
                     },
-                    onDoubleClick=sync("edit", row.id),
+                    onDoubleClick=edit_callback,
                 ):
                     mui.Typography(row.title, variant="body2")
-
 
     if "layout" in st.session_state:
         layout_json = json.dumps(st.session_state["layout"])
@@ -141,6 +144,6 @@ def create_draggable_matrix(username: str) -> None:
                 update_position(int(item["i"]), float(item["x"]), float(item["y"]), username)
 
     if "edit" in st.session_state:
-        st.session_state["edit_initiative_id"] = st.session_state.pop("edit")
+        st.session_state["edit_initiative_id"] = int(st.session_state.pop("edit"))
         st.rerun()
 
