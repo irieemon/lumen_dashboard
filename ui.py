@@ -89,15 +89,7 @@ def create_draggable_matrix(username: str) -> None:
             "position": "relative",
             "width": "100%",
             "height": "80vh",
-            # Light red so the outer container is obvious.
-            "backgroundColor": "rgba(255, 0, 0, 0.1)",
-            # Draw vertical and horizontal lines at one-third and two-thirds.
-            # React expects a single comma-separated string for multiple background images; the previous tuple was ignored.
-            "backgroundImage": "linear-gradient(to right, #666 2px, transparent 2px), linear-gradient(to right, #666 2px, transparent 2px), linear-gradient(to bottom, #666 2px, transparent 2px), linear-gradient(to bottom, #666 2px, transparent 2px)",
-            # Give each line a 2px thickness.
-            "backgroundSize": "2px 100%, 2px 100%, 100% 2px, 100% 2px",
-            "backgroundPosition": "33.33% 0, 66.66% 0, 0 33.33%, 0 66.66%",
-            "backgroundRepeat": "no-repeat",
+            "backgroundColor": "#fafafa",
             "border": "1px solid #e0e0e0",
             "overflow": "hidden",
         }
@@ -115,9 +107,8 @@ def create_draggable_matrix(username: str) -> None:
                     "left": 0,
                     "right": 0,
                     "bottom": 0,
-                    # Transparent so the board's grid remains visible.
                     "backgroundColor": "transparent",
-                    "zIndex": 1,
+                    "zIndex": 0,
                 },
             ):
                 for row in df.itertuples():
@@ -127,7 +118,6 @@ def create_draggable_matrix(username: str) -> None:
                     with html.div(
                         key=str(row.id),
                         style={
-                            # Keep note colour but add slight transparency.
                             "backgroundColor": f"{row.color or '#FFFB7D'}B3",
                             "width": "100%",
                             "height": "100%",
@@ -137,11 +127,37 @@ def create_draggable_matrix(username: str) -> None:
                             "boxShadow": "0 2px 4px rgba(0,0,0,0.2)",
                             "cursor": "move",
                             "userSelect": "none",
+                            "zIndex": 2,
                         },
                         onDoubleClick=edit_callback,
                     ):
                         mui.Typography(row.title, variant="body2")
 
+            for pos in (33.33, 66.66):
+                html.div(
+                    style={
+                        "position": "absolute",
+                        "top": 0,
+                        "left": f"{pos}%",
+                        "width": "2px",
+                        "height": "100%",
+                        "backgroundColor": "#666",
+                        "zIndex": 1,
+                        "pointerEvents": "none",
+                    }
+                )
+                html.div(
+                    style={
+                        "position": "absolute",
+                        "left": 0,
+                        "top": f"{pos}%",
+                        "width": "100%",
+                        "height": "2px",
+                        "backgroundColor": "#666",
+                        "zIndex": 1,
+                        "pointerEvents": "none",
+                    }
+                )
             html.div(
                 "Effort",
                 style={
