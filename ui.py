@@ -85,19 +85,37 @@ def create_draggable_matrix(username: str) -> None:
             "width": "100%",
             "height": "80vh",
             "backgroundColor": "#fff",
-            "backgroundImage": (
-                "linear-gradient(#d0d0d0 0 0), "
-                "linear-gradient(#d0d0d0 0 0), "
-                "linear-gradient(90deg, #d0d0d0 0 0), "
-                "linear-gradient(90deg, #d0d0d0 0 0)"
-            ),
-            "backgroundSize": "100% 2px, 100% 2px, 2px 100%, 2px 100%",
-            "backgroundPosition": "0 33.33%, 0 66.66%, 33.33% 0, 66.66% 0",
-            "backgroundRepeat": "no-repeat",
             "border": "1px solid #e0e0e0",
             "overflow": "visible",
         }
         with html.div(style=grid_style):
+            # draw vertical and horizontal lines at 1/3 and 2/3 to form 3x3 grid
+            for pos in ["33.33%", "66.66%"]:
+                # horizontal lines
+                html.div(
+                    style={
+                        "position": "absolute",
+                        "top": pos,
+                        "left": 0,
+                        "width": "100%",
+                        "height": "1px",
+                        "backgroundColor": "#d0d0d0",
+                        "zIndex": 0,
+                    }
+                )
+                # vertical lines
+                html.div(
+                    style={
+                        "position": "absolute",
+                        "left": pos,
+                        "top": 0,
+                        "width": "1px",
+                        "height": "100%",
+                        "backgroundColor": "#d0d0d0",
+                        "zIndex": 0,
+                    }
+                )
+
             with dashboard.Grid(
                 layout,
                 onLayoutChange=sync("layout"),
@@ -112,6 +130,8 @@ def create_draggable_matrix(username: str) -> None:
                     "right": 0,
                     "bottom": 0,
                     "zIndex": 1,
+                    "background": "transparent",
+
                 },
             ):
                 for row in df.itertuples():
