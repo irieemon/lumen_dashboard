@@ -102,6 +102,7 @@ def create_draggable_matrix(username: str) -> None:
             "height": "80vh",
             # Light red so the outer container is obvious.
             "backgroundColor": "rgba(255, 0, 0, 0.1)",
+          
             # Draw vertical and horizontal lines at one-third and two-thirds.
             "backgroundImage": (
                 "linear-gradient(to right, #666 2px, transparent 2px),"
@@ -143,6 +144,7 @@ def create_draggable_matrix(username: str) -> None:
                         style={
                             # Keep note colour but add slight transparency.
                             "backgroundColor": f"{row.color or '#FFFB7D'}B3",
+
                             "width": "100%",
                             "height": "100%",
                             "padding": "8px",
@@ -165,6 +167,7 @@ def create_draggable_matrix(username: str) -> None:
                     "transform": "translateX(-50%)",
                     "fontWeight": "bold",
                     "backgroundColor": "rgba(0, 0, 255, 0.1)",
+
                     "pointerEvents": "none",
                 },
             )
