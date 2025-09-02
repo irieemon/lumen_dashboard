@@ -67,7 +67,10 @@ def create_draggable_matrix(username: str) -> None:
     """Render initiatives as draggable "post-it" notes."""
     df = get_initiatives()
     if df.empty:
-        st.info("No initiatives added yet. Use the form to add one.")
+        # When no real initiatives exist, populate a few in-memory examples so
+        # the grid renders with content for visual verification. Avoid emitting
+        # a Streamlit info box because it briefly displays as a gray bar under
+        # the version caption and disappears once the grid mounts.
         df = pd.DataFrame(
             [
                 {"id": -1, "title": "Example Initiative 1", "color": "#FFFB7D", "x": 25, "y": 75},
