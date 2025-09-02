@@ -25,7 +25,6 @@ def main() -> None:
     if not authenticated:
         st.stop()
     load_css()
-    st.markdown("<div class='app-container'>", unsafe_allow_html=True)
     st.title("Lumen Strategic Dashboard")
 
     with st.sidebar:
@@ -83,7 +82,6 @@ def main() -> None:
         authenticator.logout("Logout", "sidebar")
 
     create_draggable_matrix(st.session_state.get("username", "user"))
-    st.markdown("</div>", unsafe_allow_html=True)
 
 
 if __name__ == "__main__":
