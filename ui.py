@@ -96,33 +96,6 @@ def create_draggable_matrix(username: str) -> None:
             "overflow": "visible",
         }
         with html.div(style=grid_style):
-            # draw vertical and horizontal lines at 1/3 and 2/3 to form 3x3 grid
-            for pos in ["33.33%", "66.66%"]:
-                # horizontal lines
-                html.div(
-                    style={
-                        "position": "absolute",
-                        "top": pos,
-                        "left": 0,
-                        "width": "100%",
-                        "height": "2px",
-                        "backgroundColor": "#666666",
-                        "zIndex": 0,
-                    }
-                )
-                # vertical lines
-                html.div(
-                    style={
-                        "position": "absolute",
-                        "left": pos,
-                        "top": 0,
-                        "width": "2px",
-                        "height": "100%",
-                        "backgroundColor": "#666666",
-                        "zIndex": 0,
-                    }
-                )
-
             with dashboard.Grid(
                 layout,
                 onLayoutChange=sync("layout"),
@@ -137,7 +110,7 @@ def create_draggable_matrix(username: str) -> None:
                     "right": 0,
                     "bottom": 0,
                     "zIndex": 1,
-                    "background": "transparent",
+                    "backgroundColor": "transparent",
                 },
             ):
                 for row in df.itertuples():
@@ -158,6 +131,38 @@ def create_draggable_matrix(username: str) -> None:
                         onDoubleClick=edit_callback,
                     ):
                         mui.Typography(row.title, variant="body2")
+            with html.div(
+                style={
+                    "position": "absolute",
+                    "top": 0,
+                    "left": 0,
+                    "right": 0,
+                    "bottom": 0,
+                    "pointerEvents": "none",
+                    "zIndex": 2,
+                }
+            ):
+                for pos in ["33.33%", "66.66%"]:
+                    html.div(
+                        style={
+                            "position": "absolute",
+                            "top": pos,
+                            "left": 0,
+                            "width": "100%",
+                            "height": "2px",
+                            "backgroundColor": "#666666",
+                        }
+                    )
+                    html.div(
+                        style={
+                            "position": "absolute",
+                            "left": pos,
+                            "top": 0,
+                            "width": "2px",
+                            "height": "100%",
+                            "backgroundColor": "#666666",
+                        }
+                    )
 
             html.div(
                 "Effort",
@@ -168,7 +173,7 @@ def create_draggable_matrix(username: str) -> None:
                     "transform": "translateX(-50%)",
                     "fontWeight": "bold",
                     "pointerEvents": "none",
-                    "zIndex": 2,
+                    "zIndex": 3,
                 },
             )
             html.div(
@@ -180,7 +185,7 @@ def create_draggable_matrix(username: str) -> None:
                     "transform": "translateY(-50%) rotate(-90deg)",
                     "fontWeight": "bold",
                     "pointerEvents": "none",
-                    "zIndex": 2,
+                    "zIndex": 3,
                 },
             )
 
