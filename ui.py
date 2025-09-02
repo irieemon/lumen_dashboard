@@ -138,6 +138,7 @@ def create_draggable_matrix(username: str) -> None:
                     "bottom": 0,
                     "zIndex": 1,
                     "background": "transparent",
+
                 },
             ):
                 for row in df.itertuples():
