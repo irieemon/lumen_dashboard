@@ -1,83 +1,65 @@
 import streamlit as st
-from pathlib import Path
 
 from auth import login
-from db import init_db
-from api_server import ensure_api_running
+from db import init_db, upsert_initiative
+from ui import load_css, create_draggable_matrix
+
 
 def main() -> None:
-    """Load and display the static index.html page after authentication."""
+    """Render the Streamlit dashboard used on Streamlit Cloud.
+
+    The app no longer embeds a separate HTML/JS application or spins up
+    an additional Flask API server.  Instead it interacts with the
+    database directly and renders visualizations using Plotly.  This
+    makes the app compatible with Streamlit Cloud which exposes only the
+    main Streamlit port.
+    """
     st.set_page_config(
         page_title="Lumen Strategic Dashboard",
         page_icon="⊙",
         layout="wide",
     )
 
-    ensure_api_running()
     init_db()
     authenticator, authenticated = login()
     if not authenticated:
         st.stop()
-    st.markdown(
-        """
-        <style>
-            /* Make the entire Streamlit page adopt the dashboard background */
-            html, body {
-                margin: 0;
-                padding: 0;
-                height: 100%;
-                min-height: 100vh;
-                /* Use a unified gray gradient across the app */
-                background: linear-gradient(135deg, #555, #ddd);
-            }
 
-            div[data-testid="stApp"] {
-                background: transparent;
-            }
+    load_css()
+    st.markdown("<div class='app-container'>", unsafe_allow_html=True)
+    st.title("Lumen Strategic Dashboard")
 
-            /* Remove Streamlit's default padding so the iframe reaches the edges */
-            div[data-testid="stAppViewContainer"] {
-                padding: 0;
-                background: transparent;
-            }
-            div[data-testid="stAppViewContainer"] > .main {
-                padding: 0;
-                background: transparent;
-            }
-            div[data-testid="stAppViewContainer"] > .main .block-container {
-                padding: 0;
-                margin: 0;
-                background: transparent;
-            }
-            /* Hide Streamlit's default header to remove extra white space */
-            header[data-testid="stHeader"] {
-                display: none;
-            }
+    with st.sidebar:
+        st.header("Add / Update Initiative")
+        with st.form("initiative_form", clear_on_submit=True):
+            initiative_id = st.number_input(
+                "ID (leave 0 for new)", min_value=0, step=1, value=0
+            )
+            title = st.text_input("Title")
+            details = st.text_area("Details")
+            color = st.color_picker("Color", "#ff0000")
+            category = st.text_input("Category")
+            x = st.slider("Effort", 0, 100, 50)
+            y = st.slider("Value", 0, 100, 50)
+            submitted = st.form_submit_button("Save")
+        if submitted and title:
+            new_id = upsert_initiative(
+                initiative_id if initiative_id else None,
+                title,
+                details,
+                color,
+                category,
+                float(x),
+                float(y),
+                st.session_state.get("username", "user"),
+            )
+            st.success(f"Saved initiative {new_id}")
+            st.rerun()
 
-            /* Fix the logout button to the bottom-left corner */
-            div.stButton > button:first-child {
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                z-index: 1000;
-                margin: 0;
-                padding: 0.25rem 0.75rem;
-                font-size: 0.8rem;
-            }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
+        authenticator.logout("Logout", "sidebar")
 
-    index_path = Path(__file__).with_name("index.html")
-    with index_path.open(encoding="utf-8") as f:
-        html = f.read()
-
-    # Provide an initial height; the embedded page will resize itself
-    st.components.v1.html(html, height=1200, scrolling=False)
-
-    # Place logout button below the dashboard instead of at the top
-    authenticator.logout("Logout", "main")
+    create_draggable_matrix(st.session_state.get("username", "user"))
+    st.markdown("</div>", unsafe_allow_html=True)
 
 
 if __name__ == "__main__":
