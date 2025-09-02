@@ -80,7 +80,6 @@ def create_draggable_matrix(username: str) -> None:
     df = get_initiatives()
     if df.empty:
         st.info("No initiatives added yet.")
-        return
 
     last_updated = get_last_updated()
     if "layout" not in st.session_state or st.session_state.get("layout_ts") != last_updated:
