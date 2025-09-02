@@ -142,6 +142,7 @@ def create_draggable_matrix(username: str) -> None:
                     ):
                         mui.Typography(row.title, variant="body2")
 
+
             html.div(
                 "Effort",
                 style={
@@ -162,6 +163,7 @@ def create_draggable_matrix(username: str) -> None:
                     "transform": "translateY(-50%) rotate(-90deg)",
                     "fontWeight": "bold",
                     "pointerEvents": "none",
+
                 },
             )
 
