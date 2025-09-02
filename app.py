@@ -55,6 +55,7 @@ def main() -> None:
             st.success(f"Saved initiative {new_id}")
             st.rerun()
 
+
         authenticator.logout("Logout", "sidebar")
 
     create_draggable_matrix(st.session_state.get("username", "user"))
