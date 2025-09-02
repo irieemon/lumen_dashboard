@@ -53,7 +53,8 @@ def main() -> None:
                 st.session_state.get("username", "user"),
             )
             st.success(f"Saved initiative {new_id}")
-            st.experimental_rerun()
+            st.rerun()
+
 
         authenticator.logout("Logout", "sidebar")
 
