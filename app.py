@@ -1,7 +1,6 @@
 import streamlit as st
 import subprocess
 
-from auth import login
 from db import get_initiative, init_db, upsert_initiative
 from ui import load_css, create_draggable_matrix
 
@@ -41,9 +40,7 @@ def main() -> None:
     )
 
     init_db()
-    authenticator, authenticated = login()
-    if not authenticated:
-        st.stop()
+    username = st.session_state.get("username", "user")
     load_css()
     st.title("Lumen Strategic Dashboard")
     st.caption(f"Version: {_get_version()}")
@@ -85,7 +82,7 @@ def main() -> None:
                 category,
                 float(x),
                 float(y),
-                st.session_state.get("username", "user"),
+                username,
             )
             st.success(f"Saved initiative {new_id}")
             for key in [
@@ -100,9 +97,7 @@ def main() -> None:
                 st.session_state.pop(key, None)
             st.rerun()
 
-        authenticator.logout("Logout", "sidebar")
-
-    create_draggable_matrix(st.session_state.get("username", "user"))
+    create_draggable_matrix(username)
 
 
 if __name__ == "__main__":

@@ -50,6 +50,13 @@ def load_css() -> None:
         * {
             font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif;
         }
+
+        h1 {
+            background: #007bff;
+            color: white;
+            padding: 0.25em 0.5em;
+            border-radius: 4px;
+        }
         </style>
         """,
         unsafe_allow_html=True,
