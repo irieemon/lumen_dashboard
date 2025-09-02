@@ -116,6 +116,7 @@ def create_draggable_matrix(username: str) -> None:
             rowHeight=5,
             isDraggable=True,
             isResizable=False,
+            style={"width": "100%", "minHeight": 500},
         ):
             for row in df.itertuples():
                 edit_callback = ElementsCallback(
@@ -125,6 +126,8 @@ def create_draggable_matrix(username: str) -> None:
                     key=str(row.id),
                     style={
                         "backgroundColor": row.color or "#FFFB7D",
+                        "width": "100%",
+                        "height": "100%",
                         "padding": "8px",
                         "border": "1px solid #e0e0e0",
                         "borderRadius": "4px",
