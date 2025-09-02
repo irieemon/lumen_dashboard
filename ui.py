@@ -18,18 +18,6 @@ def load_css() -> None:
             padding: 0;
             height: 100%;
             min-height: 100vh;
-            background: linear-gradient(135deg, #555, #ddd);
-        }
-
-        /* Container mimicking the original centered white card */
-        .app-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            padding: 30px;
-            min-height: 100vh;
         }
 
         div[data-testid="stApp"] {
