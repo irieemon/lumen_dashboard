@@ -89,6 +89,7 @@ def create_draggable_matrix(username: str) -> None:
             ]
         )
 
+
     last_updated = get_last_updated()
     if "layout" not in st.session_state or st.session_state.get("layout_ts") != last_updated:
         st.session_state["layout"] = [
