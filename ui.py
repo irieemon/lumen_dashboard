@@ -5,7 +5,6 @@ from streamlit_elements import elements, dashboard, html, mui, sync
 
 from db import get_initiatives, update_position, get_last_updated
 
-
 def load_css() -> None:
     """Inject CSS to mimic the original HTML dashboard styling."""
     st.markdown(
@@ -139,3 +138,4 @@ def create_draggable_matrix(username: str) -> None:
     if "edit" in st.session_state:
         st.session_state["edit_initiative_id"] = st.session_state.pop("edit")
         st.rerun()
+

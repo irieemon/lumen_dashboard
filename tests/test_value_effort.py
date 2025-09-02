@@ -39,7 +39,7 @@ def test_value_effort_low_medium(tmp_path, monkeypatch):
     row = df[df["id"] == new_id].iloc[0]
     assert row["value"] == "Low"
     assert row["effort"] == "Medium"
-
+    
 
 def test_get_initiative_and_move(tmp_path, monkeypatch):
     _prepare_db(tmp_path, monkeypatch)
@@ -49,3 +49,4 @@ def test_get_initiative_and_move(tmp_path, monkeypatch):
     assert row is not None
     assert row["x"] == 20
     assert row["y"] == 30
+

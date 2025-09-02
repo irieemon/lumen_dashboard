@@ -2,6 +2,7 @@ import streamlit as st
 
 from auth import login
 from db import get_initiative, init_db, upsert_initiative
+
 from ui import load_css, create_draggable_matrix
 
 
@@ -13,6 +14,7 @@ def main() -> None:
     database directly and displays initiatives as draggable sticky notes
     using Streamlit Elements. This makes the app compatible with
     Streamlit Cloud which exposes only the main Streamlit port.
+
     """
     st.set_page_config(
         page_title="Lumen Strategic Dashboard",
