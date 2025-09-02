@@ -86,18 +86,53 @@ def create_draggable_matrix(username: str) -> None:
                 "width": "100%",
                 "height": "80vh",
                 "background": "#f9fafb",
-                "backgroundImage": (
-                    "linear-gradient(#d0d0d0 0 0),"
-                    "linear-gradient(#d0d0d0 0 0),"
-                    "linear-gradient(#d0d0d0 0 0),"
-                    "linear-gradient(#d0d0d0 0 0)"
-                ),
-                "backgroundPosition": "33.33% 0, 66.66% 0, 0 33.33%, 0 66.66%",
-                "backgroundSize": "1px 100%, 1px 100%, 100% 1px, 100% 1px",
-                "backgroundRepeat": "no-repeat",
                 "overflow": "visible",
             }
         ):
+            html.div(
+                style={
+                    "position": "absolute",
+                    "left": "33.33%",
+                    "top": 0,
+                    "bottom": 0,
+                    "width": "2px",
+                    "background": "#d0d0d0",
+                    "zIndex": 0,
+                }
+            )
+            html.div(
+                style={
+                    "position": "absolute",
+                    "left": "66.66%",
+                    "top": 0,
+                    "bottom": 0,
+                    "width": "2px",
+                    "background": "#d0d0d0",
+                    "zIndex": 0,
+                }
+            )
+            html.div(
+                style={
+                    "position": "absolute",
+                    "top": "33.33%",
+                    "left": 0,
+                    "right": 0,
+                    "height": "2px",
+                    "background": "#d0d0d0",
+                    "zIndex": 0,
+                }
+            )
+            html.div(
+                style={
+                    "position": "absolute",
+                    "top": "66.66%",
+                    "left": 0,
+                    "right": 0,
+                    "height": "2px",
+                    "background": "#d0d0d0",
+                    "zIndex": 0,
+                }
+            )
 
             with dashboard.Grid(
                 layout,
@@ -116,9 +151,7 @@ def create_draggable_matrix(username: str) -> None:
                 },
             ):
                 for row in df.itertuples():
-                    edit_callback = ElementsCallback(
-                        lambda r_id=row.id: st.session_state.update(edit=r_id)
-                    )
+                    edit_callback = ElementsCallback(lambda r_id=row.id: st.session_state.update(edit=r_id))
                     with html.div(
                         key=str(row.id),
                         style={
