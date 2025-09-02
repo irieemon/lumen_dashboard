@@ -34,6 +34,7 @@ def load_css() -> None:
             background: transparent;
         }
 
+
         div[data-testid="stAppViewContainer"] {
             padding: 0;
             background: transparent;
