@@ -18,18 +18,6 @@ def load_css() -> None:
             padding: 0;
             height: 100%;
             min-height: 100vh;
-            background: linear-gradient(135deg, #555, #ddd);
-        }
-
-        /* Container mimicking the original centered white card */
-        .app-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            padding: 30px;
-            min-height: 100vh;
         }
 
         div[data-testid="stApp"] {
@@ -92,7 +80,6 @@ def create_draggable_matrix(username: str) -> None:
     df = get_initiatives()
     if df.empty:
         st.info("No initiatives added yet.")
-        return
 
     last_updated = get_last_updated()
     if "layout" not in st.session_state or st.session_state.get("layout_ts") != last_updated:
