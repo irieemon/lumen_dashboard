@@ -61,6 +61,14 @@ def create_draggable_matrix(username: str) -> None:
     df = get_initiatives()
     if df.empty:
         st.info("No initiatives added yet. Use the form to add one.")
+        df = pd.DataFrame(
+            [
+                {"id": -1, "title": "Example Initiative 1", "color": "#FFFB7D", "x": 25, "y": 75},
+                {"id": -2, "title": "Example Initiative 2", "color": "#7DFBFF", "x": 50, "y": 50},
+                {"id": -3, "title": "Example Initiative 3", "color": "#B3FF7D", "x": 75, "y": 25},
+            ]
+        )
+
     last_updated = get_last_updated()
     if "layout" not in st.session_state or st.session_state.get("layout_ts") != last_updated:
         st.session_state["layout"] = [
@@ -78,40 +86,24 @@ def create_draggable_matrix(username: str) -> None:
                 "width": "100%",
                 "height": "80vh",
                 "background": "#f9fafb",
+                "backgroundImage": (
+                    "linear-gradient(#d0d0d0 0 0),"
+                    "linear-gradient(#d0d0d0 0 0),"
+                    "linear-gradient(#d0d0d0 0 0),"
+                    "linear-gradient(#d0d0d0 0 0)"
+                ),
+                "backgroundPosition": "33.33% 0, 66.66% 0, 0 33.33%, 0 66.66%",
+                "backgroundSize": "1px 100%, 1px 100%, 100% 1px, 100% 1px",
+                "backgroundRepeat": "no-repeat",
                 "overflow": "visible",
             }
         ):
-            for pct in [33, 66]:
-                html.div(
-                    style={
-                        "position": "absolute",
-                        "top": f"{pct}%",
-                        "left": "0",
-                        "width": "100%",
-                        "height": "1px",
-                        "background": "#d0d0d0",
-                        "zIndex": 0,
-                        "pointerEvents": "none",
-                    }
-                )
-                html.div(
-                    style={
-                        "position": "absolute",
-                        "left": f"{pct}%",
-                        "top": "0",
-                        "width": "1px",
-                        "height": "100%",
-                        "background": "#d0d0d0",
-                        "zIndex": 0,
-                        "pointerEvents": "none",
-                    }
-                )
 
             with dashboard.Grid(
                 layout,
                 onLayoutChange=sync("layout"),
                 cols=100,
-                rowHeight=5,
+                rowHeight=8,
                 isDraggable=True,
                 isResizable=False,
                 style={
@@ -161,7 +153,7 @@ def create_draggable_matrix(username: str) -> None:
                 style={
                     "position": "absolute",
                     "top": "50%",
-                    "left": "-30px",
+                    "left": "-40px",
                     "transform": "translateY(-50%) rotate(-90deg)",
                     "fontWeight": "bold",
                     "pointerEvents": "none",
