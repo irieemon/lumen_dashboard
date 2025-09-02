@@ -54,17 +54,6 @@ def load_css() -> None:
             padding: 0.25em 0.5em;
             border-radius: 4px;
         }
-
-        /*
-         * Debug colouring: make every div easier to spot by giving common
-         * Streamlit containers distinct backgrounds. This intentionally uses
-         * loud colours so the rendering hierarchy is obvious while we
-         * troubleshoot visibility issues.
-         */
-        div[data-testid="stApp"] { background: #ffe5e5; }
-        div[data-testid="stAppViewContainer"] { background: #e5ffe5; }
-        .main .block-container { background: #e5e5ff; }
-        div[data-testid="stSidebar"] { background: #fff8dc; }
         </style>
         """,
         unsafe_allow_html=True,
@@ -102,7 +91,6 @@ def create_draggable_matrix(username: str) -> None:
             "height": "80vh",
             # Light red so the outer container is obvious.
             "backgroundColor": "rgba(255, 0, 0, 0.1)",
-          
             # Draw vertical and horizontal lines at one-third and two-thirds.
             "backgroundImage": (
                 "linear-gradient(to right, #666 2px, transparent 2px),"
@@ -144,7 +132,6 @@ def create_draggable_matrix(username: str) -> None:
                         style={
                             # Keep note colour but add slight transparency.
                             "backgroundColor": f"{row.color or '#FFFB7D'}B3",
-
                             "width": "100%",
                             "height": "100%",
                             "padding": "8px",
@@ -167,7 +154,6 @@ def create_draggable_matrix(username: str) -> None:
                     "transform": "translateX(-50%)",
                     "fontWeight": "bold",
                     "backgroundColor": "rgba(0, 0, 255, 0.1)",
-
                     "pointerEvents": "none",
                 },
             )
