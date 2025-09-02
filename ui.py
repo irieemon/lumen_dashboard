@@ -1,5 +1,6 @@
 import streamlit as st
 import json
+import pandas as pd
 
 from streamlit_elements import elements, dashboard, html, mui, sync
 from streamlit_elements.core.callback import ElementsCallback
@@ -79,7 +80,15 @@ def create_draggable_matrix(username: str) -> None:
     """Render initiatives as draggable "post-it" notes."""
     df = get_initiatives()
     if df.empty:
-        st.info("No initiatives added yet.")
+        st.info("No initiatives added yet. Showing sample initiatives.")
+        df = pd.DataFrame(
+            [
+                {"id": -1, "title": "Sample Initiative 1", "color": "#FFFB7D", "x": 20, "y": 80},
+                {"id": -2, "title": "Sample Initiative 2", "color": "#FFD6A5", "x": 50, "y": 50},
+                {"id": -3, "title": "Sample Initiative 3", "color": "#CBF3F0", "x": 80, "y": 20},
+            ]
+        )
+
 
     last_updated = get_last_updated()
     if "layout" not in st.session_state or st.session_state.get("layout_ts") != last_updated:
@@ -131,7 +140,9 @@ def create_draggable_matrix(username: str) -> None:
         if layout_json != st.session_state.get("_layout_snapshot"):
             st.session_state["_layout_snapshot"] = layout_json
             for item in st.session_state["layout"]:
-                update_position(int(item["i"]), float(item["x"]), float(item["y"]), username)
+                item_id = int(item["i"])
+                if item_id > 0:
+                    update_position(item_id, float(item["x"]), float(item["y"]), username)
 
     if "edit" in st.session_state:
         st.session_state["edit_initiative_id"] = int(st.session_state.pop("edit"))
