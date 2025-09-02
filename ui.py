@@ -4,12 +4,50 @@ import plotly.express as px
 from db import get_initiatives
 
 
-def load_css():
+def load_css() -> None:
+    """Inject CSS to mimic the original HTML dashboard styling."""
     st.markdown(
         """
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        * { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif; }
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #555, #ddd);
+        }
+        div[data-testid="stApp"] {
+            background: transparent;
+        }
+        div[data-testid="stAppViewContainer"] {
+            padding: 0;
+            background: transparent;
+        }
+        div[data-testid="stAppViewContainer"] > .main {
+            padding: 0;
+            background: transparent;
+        }
+        div[data-testid="stAppViewContainer"] > .main .block-container {
+            padding: 0;
+            margin: 0;
+            background: transparent;
+        }
+        header[data-testid="stHeader"] {
+            display: none;
+        }
+        div.stButton > button:first-child {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            z-index: 1000;
+            margin: 0;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.8rem;
+        }
+        * {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif;
+        }
         </style>
         """,
         unsafe_allow_html=True,
